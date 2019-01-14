@@ -1,4 +1,14 @@
 apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+data:
+  username: bWF4
+  password: MTIzNA==
+
+---
+
+apiVersion: v1
 kind: Pod
 metadata:
   name: jenkins-pod
@@ -9,6 +19,18 @@ spec:
   containers:
   - name: jenkins-demo
     image: 192.168.213.128:5000/get-python:v1
+    env:
+    - name: SECRET_USERNAME
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: username
+    - name: SECRET_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: test-secret
+          key: password
+
 
 ---
 
