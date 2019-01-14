@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins-pod
+  namespace: jenkins-srv
+  labels:
+    service: jenkins-srvs
+spec:
+  containers:
+  - name: jenkins-demo
+    image: 192.168.213.128:5000/get-python:v1
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-service
+  namespace: jenkins-srv
+spec:
+  selector:
+    service: jenkins-srvs
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: LoadBalancer
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: ssh
+  namespace: jenkins-srv
+spec:
+  selector:
+    service: jenkins-srvs
+  ports:
+  - protocol: TCP
+    port: 22
+    targetPort: 22  
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: registry
+  labels:
+    app: registry
+  namespace: jenkins-srv
+spec:
+  containers:
+  - name: registry
+    image: registry:2
+    imagePullPolicy: Always
+    ports:
+      - containerPort: 5000
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: registry
+  namespace: jenkins-srv
+spec:
+  selector:
+    service: jenkins-srvs
+  ports:
+    - port: 5000
+      targetPort: 5000
+  type: LoadBalancer
