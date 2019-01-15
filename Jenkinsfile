@@ -43,7 +43,7 @@ node
         stage("Check push image to Docker Registry"){
             sh "pip install requests"
             pathTocode = pwd()
-            sh "python3.6 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
+            sh "python3.4 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
         }
         stage("Deploy to Kubernetes"){
             sh("sed -i.bak 's#${imageN}${imageVersion}#${imageName}#' jenkins-pod.yaml")
