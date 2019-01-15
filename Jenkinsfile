@@ -23,11 +23,11 @@ node
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
         }
-        stage("Test code using PyLint"){
-            sh "pip3 install pylint"
-            pathTocode = pwd()
-            sh "python3.6 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
-        }
+//        stage("Test code using PyLint"){
+//            sh "pip3 install pylint"
+//            pathTocode = pwd()
+//            sh "python3.6 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
+//        }
         stage("Build docker image"){
             pathdocker = pwd()
 //            app = docker.build("${imageName}:${imageTag}")
