@@ -24,7 +24,7 @@ node
             sh 'echo "Here will be unit tests"'
         }
         stage("Test code using PyLint"){
-            sh "pip install pylint"
+            sh "pip3 install pylint"
             pathTocode = pwd()
             sh "python3.6 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
         }
