@@ -10,11 +10,11 @@ spec:
     app: get
   ports:
   - protocol: TCP
-    port: 5000
-    targetPort: 5000
-...
+    port: 80
+    targetPort: 5003
+
 ---
-apiVersion: apps/v1beta2
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: get-deployment
@@ -30,13 +30,12 @@ spec:
     spec:
       containers:
       - name: get
-        image: ghostgoose33/get-python:v2
+        image: 100.100.100.100/get-python:v2
         ports:
-        - containerPort: 5000
+        - containerPort: 5003
         env:
         - name: URL_DB
           valueFrom:
             configMapKeyRef:
               name: services-address
               key: URL_DB
-...
