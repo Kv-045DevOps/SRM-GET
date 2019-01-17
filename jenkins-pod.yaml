@@ -37,7 +37,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: ssh
-  namespace: jenkins-srv
+  namespace: stark-cluster
 spec:
   selector:
     service: jenkins-srvs
@@ -52,7 +52,7 @@ kind: Service
 apiVersion: v1
 metadata:
   name: registry
-  namespace: jenkins-srv
+  namespace: stark-cluster
 spec:
   selector:
     service: jenkins-srvs
