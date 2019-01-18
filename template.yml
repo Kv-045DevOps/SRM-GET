@@ -1,0 +1,41 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: get-service
+  labels:
+    app: get
+spec:
+  selector:
+    app: get
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5003
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: get-deployment
+spec:
+  selector:
+    matchLabels:
+      app: get
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: get
+    spec:
+      containers:
+      - name: get
+        image: 100.100.100.100/get-python:v2
+        ports:
+        - containerPort: 5003
+        env:
+        - name: URL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: URL_DB
