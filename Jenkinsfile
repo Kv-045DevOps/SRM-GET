@@ -26,7 +26,7 @@ node(label)
             git(
                 branch: "MZhovanik",
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git')
-                //credentialsId: "${Creds}")
+                credentialsId: "${Creds}")
             sh "git rev-parse --short HEAD > .git/commit-id"
             imageTag= readFile ".git/commit-id"
         }

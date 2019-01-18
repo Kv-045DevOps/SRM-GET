@@ -5,7 +5,7 @@ with open(sys.argv[1], 'r') as file:
     str_tmp = "ghostgoose"
     data = file.read()
     tmp = sys.argv[2] + ":" + sys.argv[3]
-    data = data.replace("ghostgoose33/get-python:v1", tmp)
+    data = data.replace("100.71.71.71:5000/get-service:v1", tmp)
     print(data)
          
 
