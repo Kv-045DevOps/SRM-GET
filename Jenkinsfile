@@ -49,6 +49,7 @@ node(label)
 //            app = docker.build("${imageName}:${imageTag}")
 				sh "docker build ${pathdocker} -t ${imageN}${imageTag}"
 				sh "docker images"
+                                sh "cat /etc/docker/daemon.json"
 	//withCredentials([usernamePassword(credentialsId: 'docker_registry_2', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
 				    
 				sh "docker push ${imageN}${imageTag}"
