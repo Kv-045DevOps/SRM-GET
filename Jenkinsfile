@@ -2,7 +2,7 @@ def label = "mypod-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'docker', command: 'echo "{"insecure-registries" : ["myregistrydomain.com:5000"]}" >> /etc/docker/daemon.json', ttyEnabled: true'),
+  containerTemplate(name: 'docker', image: 'docker', command: 'echo "{"insecure-registries" : ["myregistrydomain.com:5000"]}" >> /etc/docker/daemon.json', ttyEnabled: true),
   containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
