@@ -15,8 +15,8 @@ def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 def projName = "get-python"
 def imageVersion = "v1"
-def imageName = "ghostgoose33/get-python:${imageVersion}"
-def imageN = 'ghostgoose33/get-python:'
+def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
+def imageN = '100.71.71.71:5000/get-service:'
 
 
 node(label)
@@ -25,8 +25,8 @@ node(label)
         stage("Git Checkout"){
             git(
                 branch: "MZhovanik",
-                url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
-                credentialsId: "${Creds}")
+                url: 'https://github.com/Kv-045DevOps/SRM-GET.git')
+                //credentialsId: "${Creds}")
             sh "git rev-parse --short HEAD > .git/commit-id"
             imageTag= readFile ".git/commit-id"
         }
@@ -49,10 +49,10 @@ node(label)
 //            app = docker.build("${imageName}:${imageTag}")
 				sh "docker build ${pathdocker} -t ${imageN}${imageTag}"
 				sh "docker images"
-				withCredentials([usernamePassword(credentialsId: 'docker_registry_2', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-				    sh "docker login -u ${env.dockerUser} -p ${env.dockerPassword}"
-				    sh "docker push ${imageN}${imageTag}"
-        }
+	//withCredentials([usernamePassword(credentialsId: 'docker_registry_2', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+				    
+				sh "docker push ${imageN}${imageTag}"
+        //}
 			}
         }
         stage("Check push image to Docker Registry"){
@@ -61,9 +61,8 @@ node(label)
         }
         stage("Deploy to Kubernetes"){
 			container('kubectl'){
-				sh ("cat jenkins-pod.yaml")
-				sh "kubectl apply -f jenkins-pod.yaml"
-				sh "kubectl get pods --namespace=stark-cluster"
+				sh "kubectl apply -f template.yaml"
+				sh "kubectl get pods --namespace=production"
 			}
         }
 	stage ("Unit Tests"){
