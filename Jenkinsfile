@@ -73,11 +73,11 @@ node(label)
           }
         }
 	stage ("E2E Tests - Stage 2"){
-        //    container('kubectl'){
-        //   sh 'kubectl apply -f Kuben.yml'
+            container('kubectl'){
+           sh 'kubectl apply -f Kuben.yml'
 	//   sh 'kubectl apply -f Kuben(1).yml'
 	//   sh 'kubectl get pods -n testing'
-        //  }
+          }
         }
         stage ("E2E Tests - Stage 3"){
             container('python-alpine'){
