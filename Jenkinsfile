@@ -61,13 +61,30 @@ node(label)
         }
         stage("Deploy to Kubernetes"){
 			container('kubectl'){
-				sh "kubectl apply -f template.yaml"
+				sh "kubectl apply -f template.yml"
 				sh "kubectl get pods --namespace=production"
 			}
         }
-	stage ("Unit Tests"){
-            sh 'echo "Here will be e2e tests"'
+        stage ("E2E Tests - Stage 1"){
+            container('python-alpine'){
+            sh 'echo "Here are e2e tests"'
+	    sh 'python3 e2e-test-prod.py'
+          }
         }
+	stage ("E2E Tests - Stage 2"){
+        //    container('kubectl'){
+        //   sh 'kubectl apply -f Kuben.yml'
+	//   sh 'kubectl apply -f Kuben(1).yml'
+	//   sh 'kubectl get pods -n testing'
+        //  }
+        }
+        stage ("E2E Tests - Stage 3"){
+            container('python-alpine'){
+            sh 'echo "Here are e2e tests"'
+	    sh 'python3 e2e-test-test.py'
+          }
+        }
+
     }
     catch(err){
         currentBuild.result = 'Failure'
