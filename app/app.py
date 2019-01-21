@@ -8,10 +8,10 @@ app = Flask(__name__)
 
 
 
-URL_DEP = str(os.getenv("URL_DB")) + '/get-dep'
-URL_EMPL = str(os.getenv("URL_DB")) + '/get-empl'
-URL_TEAM = str(os.getenv("URL_DB")) + '/get-team'
-URL_ALL = str(os.getenv("URL_DB")) + '/get-info'
+URL_DEP = str(os.getenv("URL_DB")) + ':5002/get-dep'
+URL_EMPL = str(os.getenv("URL_DB")) + ':5002/get-empl'
+URL_TEAM = str(os.getenv("URL_DB")) + ':5002/get-team'
+URL_ALL = str(os.getenv("URL_DB")) + ':5002/get-info'
 
 def print_url():
     print(URL_DEP)
