@@ -13,7 +13,7 @@ volumes: [
 def app
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
-def projName = "get-python"
+def projName = "get-service"
 def imageVersion = "v1"
 def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
 def imageN = '100.71.71.71:5000/get-service:'
