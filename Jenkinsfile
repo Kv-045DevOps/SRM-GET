@@ -58,32 +58,33 @@ node(label)
         stage("Check push image to Docker Registry"){
             pathTocode = pwd()
 	    container('python-alpine'){
-            sh "python3 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
+            //sh "python3 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
         }
 	}
         stage("Deploy to Kubernetes"){
 			container('kubectl'){
+			    sh "kubectl get pods --namespace=production"
 				sh "kubectl apply -f template.yml"
-				sh "kubectl get pods --namespace=production"
+				
 			}
         }
         stage ("E2E Tests - Stage 1"){
             container('python-alpine'){
-            sh 'echo "Here are e2e tests"'
-	    sh 'python3 e2e-test-prod.py'
+    //        sh 'echo "Here are e2e tests"'
+	//    sh 'python3 e2e-test-prod.py'
           }
         }
 	stage ("E2E Tests - Stage 2"){
             container('kubectl'){
-           sh 'kubectl apply -f Kuben.yml'
+     //      sh 'kubectl apply -f Kuben.yml'
 	//   sh 'kubectl apply -f Kuben(1).yml'
 	//   sh 'kubectl get pods -n testing'
           }
         }
         stage ("E2E Tests - Stage 3"){
             container('python-alpine'){
-            sh 'echo "Here are e2e tests"'
-	    sh 'python3 e2e-test-test.py'
+     //       sh 'echo "Here are e2e tests"'
+	 //   sh 'python3 e2e-test-test.py'
           }
         }
 
