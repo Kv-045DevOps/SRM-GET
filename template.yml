@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: get
-        image: 100.71.71.71:5000/get-python:v2
+        image: 100.71.71.71:5000/get-service:v2
         ports:
         - containerPort: 5003
         env:
