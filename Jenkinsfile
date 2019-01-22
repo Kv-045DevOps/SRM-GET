@@ -7,8 +7,7 @@ podTemplate(label: label, containers: [
 ],
 volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
-]
-) 
+], serviceAccount: "jenkins") 
 {
 def app
 def dockerRegistry = "100.71.71.71:5000"
@@ -58,8 +57,10 @@ node(label)
         }
         stage("Check push image to Docker Registry"){
             pathTocode = pwd()
+	    container('python-alpine'){
             sh "python3 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
         }
+	}
         stage("Deploy to Kubernetes"){
 			container('kubectl'){
 				sh "kubectl apply -f template.yml"
