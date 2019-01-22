@@ -8,8 +8,9 @@ def main():
 
 
 def check_image():
-   tmp = requests.get("http://" + sys.argv[1] + "/" + sys.argv[2] + "/" + sys.argv[3] + "/tags/list")
+   tmp = requests.get("http://" + sys.argv[1] + "/v2/" + sys.argv[3] + "/tags/list")
    req = tmp.json()
+   print(req)
    if req["name"] == sys.argv[2] and sys.argv[3] in req["tags"]:
        return 0
    else:
