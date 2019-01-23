@@ -24,7 +24,7 @@ node(label)
     try{
         stage("Git Checkout"){
             git(
-                branch: "MZhovanik",
+                branch: "test",
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
@@ -46,22 +46,13 @@ node(label)
         stage("Build docker image"){
 			container('docker'){
 				pathdocker = pwd()
-//            app = docker.build("${imageName}:${imageTag}")
 				sh "docker build ${pathdocker} -t ${imageN}${imageTag}"
 				sh "docker images"
                                 sh "cat /etc/docker/daemon.json"
-	//withCredentials([usernamePassword(credentialsId: 'docker_registry_2', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-				    
 				sh "docker push ${imageN}${imageTag}"
-        //}
 			}
         }
-        stage("Check push image to Docker Registry"){
-            pathTocode = pwd()
-	    container('python-alpine'){
-            //sh "python3 ${pathTocode}/images-registry-test.py ${dockerRegistry} ${projName} ${imageTag}"
-        }
-	}
+        
         stage("Deploy to Kubernetes"){
 			container('kubectl'){
 			    sh "kubectl get pods --namespace=production"
@@ -71,21 +62,20 @@ node(label)
         }
         stage ("E2E Tests - Stage 1"){
             container('python-alpine'){
-    //        sh 'echo "Here are e2e tests"'
-	//    sh 'python3 e2e-test-prod.py'
+            sh 'echo "Here are e2e tests"'
+	    sh 'python3 e2e-test-prod.py'
           }
         }
 	stage ("E2E Tests - Stage 2"){
             container('kubectl'){
-     //      sh 'kubectl apply -f Kuben.yml'
-	//   sh 'kubectl apply -f Kuben(1).yml'
+     //      sh 'kubectl apply -f Kuben.yml
 	//   sh 'kubectl get pods -n testing'
           }
         }
         stage ("E2E Tests - Stage 3"){
             container('python-alpine'){
-     //       sh 'echo "Here are e2e tests"'
-	 //   sh 'python3 e2e-test-test.py'
+            //sh 'echo "Here are e2e tests"'
+	    //sh 'python3 e2e-test-test.py'
           }
         }
 
