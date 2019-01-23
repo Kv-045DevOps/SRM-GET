@@ -22,6 +22,8 @@ def print_url():
 def get_dep():
     r = requests.get(URL_DEP)
     if r.status_code == 200:
+        print(type(r.content))
+        print(r.content)
         return r.content
     else:
         return (r.status_code, r.headers)
