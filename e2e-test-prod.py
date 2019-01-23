@@ -10,17 +10,17 @@ def check_services():
     URL = "http://ui-service.production.svc:5000/"
     req = requests.get(URL)
     if req.status_code == 200:
-        print("Tests successfull pass")
+        print("Tests UI successfull pass")
     else:
         raise Exception("Fucking bitch!!!! Opssss")
         return 1
     URL_GET = "http://ui-service.production.svc:5000/salaries"
     reques = requests.get(URL_GET)
     if reques.status_code == 200:
-        print("Get req success to UI")
+        print("Test success to UI-GET/salaries")
         return 0
     else:
-        raise Exception("Fucking bitch again!!!! Opssss. You are unclever animal")
+        raise Exception("Fucking bitch again!!!! Opssss. You are ....")
         return -1
         
 if __name__ == '__main__':

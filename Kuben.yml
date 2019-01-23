@@ -210,7 +210,7 @@ spec:
     app: get
   ports:
   - protocol: TCP
-    port: 80
+    port: 5003
     targetPort: 5003
 
 ---
@@ -288,3 +288,74 @@ spec:
             configMapKeyRef:
               name: services-address
               key: VIEW_SERVICE_URL
+
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: testing
+  name: db-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-service
+    spec:
+      initContainers:
+      - image: 100.71.71.71:5000/init-container:latest
+        name: init-container-postgres
+        env:
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']
+      containers:
+      - image: 100.71.71.71:5000/db-service:latest
+        name: db-service
+        ports:
+        - containerPort: 5002
+        env:
+        - name: POSTGRES_HOST
+          value: srmsystemdb
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: db-service
+spec:
+  selector:
+    app: db-service
+  ports:
+  - protocol: TCP
+    port: 5002
+    targetPort: 5002
