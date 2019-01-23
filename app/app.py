@@ -26,6 +26,7 @@ def get_dep():
         print(r.content)
         return r.content
     else:
+        print(r.status_code)
         return (r.status_code, r.headers)
 
 def get_empl():
