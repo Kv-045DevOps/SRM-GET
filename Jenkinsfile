@@ -28,7 +28,7 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            imageTag = sh (script: "git rev-parse --short HEAD", returnStdout: true)`
+            imageTag = sh (script: "git rev-parse --short HEAD", returnStdout: true)
         }
         stage("Info"){
             sh "echo ${imageTag}"
