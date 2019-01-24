@@ -1,4 +1,5 @@
 def label = "mypod-${UUID.randomUUID().toString()}"
+def label_f = "mypod-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
@@ -7,7 +8,8 @@ podTemplate(label: label, containers: [
 ],
 volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
-], serviceAccount: "jenkins") 
+], serviceAccount: "jenkins")
+
 {
 def app
 def imageTag
@@ -64,18 +66,20 @@ node(label)
             container('python-alpine'){
             sh 'echo "Here are e2e tests"'
 	    sh 'python3 e2e-test-prod.py'
+	    sh "python3 sed_python_test.py template-test.yml ${imageTag}"
+	    sh 'cat template-test.yml'
           }
         }
 	stage ("E2E Tests - Stage 2"){
             container('kubectl'){
-     //      sh 'kubectl apply -f Kuben.yml
-	//   sh 'kubectl get pods -n testing'
+       sh 'kubectl apply -f template-test.yml'
+	   sh 'kubectl get pods -n testing'
           }
         }
         stage ("E2E Tests - Stage 3"){
             container('python-alpine'){
-            //sh 'echo "Here are e2e tests"'
-	    //sh 'python3 e2e-test-test.py'
+            sh 'echo "Here are e2e tests"'
+	        //sh 'python3 e2e-test-test.py'
           }
         }
 
