@@ -167,7 +167,7 @@ spec:
     app: post
   ports:
   - protocol: TCP
-    port: 80
+    port: 5001
     targetPort: 5001
 
 ---
@@ -253,7 +253,7 @@ spec:
     app: ui
   ports:
   - protocol: TCP
-    port: 80
+    port: 5000
     targetPort: 5000
 
 ---
