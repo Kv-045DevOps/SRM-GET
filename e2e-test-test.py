@@ -11,7 +11,6 @@ def check_services():
     req = requests.get(URL)
     if req.status_code == 200:
         print("Test UI successfull pass")
-        continue
     else:
         raise Exception("Fucking bitch!!!! Opssss")
         return 1
