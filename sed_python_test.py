@@ -13,8 +13,9 @@ with open(sys.argv[1], 'r') as file:
         tmp = arr_f[i] + ":" + arr_s[i]
         data = data.replace(arr[i], tmp)
     
-    print(data)
+    
          
 
 with open(sys.argv[1], 'w') as file:
     file.write( data )
+    print(data)
