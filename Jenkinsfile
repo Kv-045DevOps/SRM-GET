@@ -19,7 +19,6 @@ def projName = "get-service"
 def imageVersion = "v2"
 def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
 def imageN = '100.71.71.71:5000/get-service:'
-def pathTocode
 
 node(label)
 {
@@ -30,7 +29,7 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            def imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
