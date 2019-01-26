@@ -19,7 +19,7 @@ def projName = "get-service"
 def imageVersion = "v2"
 def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
 def imageN = '100.71.71.71:5000/get-service:'
-
+def pathTocode
 
 node(label)
 {
@@ -37,7 +37,7 @@ node(label)
         }
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
-				def pathTocode = pwd()
+				pathTocode = pwd()
 				sh "python3 ${pathTocode}/sed_python.py template.yml ${dockerRegistry}/get-service ${imageTagGET}"
 				sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
 			}
