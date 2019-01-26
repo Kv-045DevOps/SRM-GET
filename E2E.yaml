@@ -105,7 +105,7 @@ spec:
         app: db-service
     spec:
       initContainers:
-      - image: 100.71.71.71:5000/init-container:latest
+      - image: 100.71.71.71:5000/init-container:5
         name: init-container-postgres
         env:
         - name: PGDATABASE
@@ -125,7 +125,7 @@ spec:
               key: password
         command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']
       containers:
-      - image: 100.71.71.71:5000/db-service:latest
+      - image: 100.71.71.71:5000/db-service:4
         name: db-service
         ports:
         - containerPort: 5002
@@ -197,7 +197,7 @@ spec:
     spec:
       containers:
       - name: post
-        image: 100.71.71.71:5000/post-service:2.1
+        image: 100.71.71.71:5000/post-service:2
         ports:
         - containerPort: 5001
         env:
@@ -240,7 +240,7 @@ spec:
     spec:
       containers:
       - name: ui
-        image: 100.71.71.71:5000/ui-service:latest
+        image: 100.71.71.71:5000/ui-service:3
         ports:
         - containerPort: 5000
         env:
@@ -288,7 +288,7 @@ spec:
     spec:
       containers:
       - name: get
-        image: 100.71.71.71:5000/get-service:v2
+        image: 100.71.71.71:5000/get-service:1
         ports:
         - containerPort: 5003
         env:
