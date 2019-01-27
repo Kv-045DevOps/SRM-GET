@@ -1,0 +1,120 @@
+def label = "mypod-${UUID.randomUUID().toString()}"
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+], serviceAccount: "jenkins") 
+{
+def imageTag
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+def projName = "get-service"
+def imageVersion = "v2"
+def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
+def imageN = '100.71.71.71:5000/get-service:'
+def buildResult
+def paramss = ["GitHub/SRM-GET/test", "GitHub/SRM-UI/test", "GitHub/SRM-DB/test"]
+node(label)
+{
+    try{
+        stage("Pre-Test"){
+            dir('db'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-DB.git', credentialsId: "${Creds}")
+            imageTagDB = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodedb=pwd()
+            }
+            dir('ui'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-UI.git', credentialsId: "${Creds}")
+            imageTagUI = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodeui=pwd()
+            }
+            dir('post'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-POST.git', credentialsId: "${Creds}")
+            imageTagPOST = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodepost=pwd()
+            }
+            dir('ini'){
+            git(branch: "master", url: 'https://github.com/Kv-045DevOps/Kubik-DB.git', credentialsId: "${Creds}")
+            imageTagINI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeini=pwd()
+            }
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeget = pwd()
+            }
+        
+        }
+        stage('testing') {
+            def jobs = [:]
+            for(i = 0; i < paramss.size(); i += 1) {
+                def param = paramss[i]
+                jobs["Jobs_build_${i}"] = {
+                    build job: param, parameters: [string(name: 'Name', value: param)], waitForFinish: true
+                }
+            }
+            parallel jobs
+        }
+        stage("E2E-Test"){
+            container('python-alpine'){
+            sh "ls /home/jenkins/workspace/"
+            sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/get-service ${imageTagGET}"
+            //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
+            sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/db-service ${imageTagDB}"
+            sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/ui-service ${imageTagUI}"
+            sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/init-container ${imageTagDB}"
+            }
+             
+        }
+        stage("Docker images"){
+            container("docker"){
+                sh "docker images"
+            }
+        }
+        stage("E2E Test - Stage 1"){
+            container('kubectl'){
+                sh "kubectl apply -f ${pathTocodeget}/E2E.yaml"
+            }
+        }
+        sleep 10
+        stage ("E2E Tests - Stage 2"){
+            container('python-alpine'){
+                sh 'echo "Here is e2e test"'
+	            sh "python3 ${pathTocodeget}/e2e-test-test.py"
+          }
+        }
+        stage("Deploy to Kubernetes"){
+            container('python-alpine'){
+                sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yml ${dockerRegistry}/get-service ${imageTagGET}"
+                //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
+                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${imageTagDB}"
+                sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yml ${dockerRegistry}/ui-service ${imageTagUI}"
+                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${imageTagDB}"
+            }
+			container('kubectl'){
+				sh "kubectl apply -f ${pathTocodeini}/template.yaml"
+				sh "kubectl apply -f ${pathTocodedb}/template.yaml"
+				sh "kubectl apply -f ${pathTocodeget}/template.yml"
+				sh "kubectl apply -f ${pathTocodeui}/template.yml"
+				//sh "kubectl apply -f ${pathTocodepost}/template.yml"
+				sh "kubectl get pods --namespace=production"
+				
+			}
+        }
+        stage ("Prod Tests - Stage 1"){
+            container('python-alpine'){
+                sh 'echo "Here is prod test"'
+	            sh "python3 ${pathTocodeget}/e2e-test-prod.py"
+          }
+        }
+    }
+    catch(err){
+        currentBuild.result = 'Failure'
+    }
+}
+}
+sleep 10
