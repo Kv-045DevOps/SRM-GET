@@ -1,6 +1,26 @@
 ---
 
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: testing
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: testing
+  name: services-address
+data:
+  POST_SERVICE_URL: post-service.production.svc
+  VIEW_SERVICE_URL: get-service.production.svc
+  DB_URL: db-service.production.svc
+  URL_DB: db-service.production.svc
+
+---
+
+apiVersion: v1
 kind: Secret
 metadata:
  name:  db-secret
