@@ -244,11 +244,11 @@ spec:
         ports:
         - containerPort: 5000
         env:
-        - name: POST_SERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: services-address
-              key: POST_SERVICE_URL
+#        - name: POST_SERVICE_URL
+#          valueFrom:
+#            configMapKeyRef:
+#              name: services-address
+#              key: POST_SERVICE_URL
         - name: VIEW_SERVICE_URL
           valueFrom:
             configMapKeyRef:
