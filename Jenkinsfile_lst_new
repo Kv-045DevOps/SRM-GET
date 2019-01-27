@@ -1,4 +1,14 @@
+@NonCPS
+def mapToList(depmap) {
+    def dlist = []
+    for (def entry2 in depmap) {
+        dlist.add(new java.util.AbstractMap.SimpleImmutableEntry(entry2.key, entry2.value))
+    }
+    dlist
+}
+
 def label = "mypod-${UUID.randomUUID().toString()}"
+
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
@@ -9,7 +19,7 @@ volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
 ], serviceAccount: "jenkins") 
 {
-def imageTag
+
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 def projName = "get-service"
@@ -18,6 +28,7 @@ def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
 def imageN = '100.71.71.71:5000/get-service:'
 def buildResult
 def paramss = ["GitHub/SRM-GET/test", "GitHub/SRM-UI/test", "GitHub/SRM-DB/test"]
+
 node(label)
 {
     try{
@@ -49,7 +60,7 @@ node(label)
             }
         
         }
-        stage('testing') {
+        stage('Build and push Docker images') {
             def jobs = [:]
             for(i = 0; i < paramss.size(); i += 1) {
                 def param = paramss[i]
@@ -59,13 +70,15 @@ node(label)
             }
             parallel jobs
         }
-        stage("E2E-Test"){
+        stage("E2E-Test-pre"){
             container('python-alpine'){
             sh "ls /home/jenkins/workspace/"
-            sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/get-service ${imageTagGET}"
-            //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
-            sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/db-service ${imageTagDB}"
-            sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/ui-service ${imageTagUI}"
+            def map = [:]
+            map = [
+                'get':[tag: "${imageTagGET}", path: "${pathTocodeget}"], 'post':[tag: "${imageTagPOST}", path: "${pathTocodepost}"], 
+                'db':[tag: "${imageTagDB}", path: "${pathTocodedb}"], 'ui':[tag: "${imageTagUI}", path: "${pathTocodeui}"]
+                ]
+            map.each{ k, v -> sh "python3 ${v['path']}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/${k}-service ${v['tag']}" }
             sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/init-container ${imageTagDB}"
             }
              
@@ -78,6 +91,7 @@ node(label)
         stage("E2E Test - Stage 1"){
             container('kubectl'){
                 sh "kubectl apply -f ${pathTocodeget}/E2E.yaml"
+                sh "kubectl get pods --namespace=testing"
             }
         }
         sleep 10
@@ -89,17 +103,20 @@ node(label)
         }
         stage("Deploy to Kubernetes"){
             container('python-alpine'){
-                sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yml ${dockerRegistry}/get-service ${imageTagGET}"
+                sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/get-service ${imageTagGET}"
                 //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
                 sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${imageTagDB}"
-                sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yml ${dockerRegistry}/ui-service ${imageTagUI}"
+                sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yaml ${dockerRegistry}/ui-service ${imageTagUI}"
                 sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${imageTagDB}"
             }
 			container('kubectl'){
-				sh "kubectl apply -f ${pathTocodeini}/template.yaml"
-				sh "kubectl apply -f ${pathTocodedb}/template.yaml"
-				sh "kubectl apply -f ${pathTocodeget}/template.yml"
-				sh "kubectl apply -f ${pathTocodeui}/template.yml"
+			def temp = [:]
+            temp = [
+                'ini':"${pathTocodeini}", 'db':"${pathTocodedb}", 
+                'get':"${pathTocodeget}", 'ui':"${pathTocodeui}"
+                //, 'post':"${pathTocodepost}"
+                ]
+            temp.each{ k, v -> sh "kubectl apply -f ${v}/template.yaml" }
 				//sh "kubectl apply -f ${pathTocodepost}/template.yml"
 				sh "kubectl get pods --namespace=production"
 				
