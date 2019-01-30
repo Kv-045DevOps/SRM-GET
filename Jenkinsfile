@@ -29,7 +29,7 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            env.imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            //env.imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
