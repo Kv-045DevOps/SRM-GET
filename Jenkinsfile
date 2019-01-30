@@ -29,7 +29,7 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            //env.imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
@@ -37,7 +37,7 @@ node(label)
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
 				pathTocode = pwd()
-				sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${params.imageTagGET}"
+				sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTagGET}"
 				sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
 			}
         }
