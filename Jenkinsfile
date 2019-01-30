@@ -37,17 +37,17 @@ node(label)
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
 				pathTocode = pwd()
-				sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTagGET}"
+				sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTag}"
 				sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
 			}
         }
         stage("Build docker image"){
 			container('docker'){
 				pathdocker = pwd()
-				sh "docker build ${pathdocker} -t ${imageN}${imageTagGET}"
+				sh "docker build ${pathdocker} -t ${imageN}${imageTag}"
 				sh "docker images"
                                 sh "cat /etc/docker/daemon.json"
-				sh "docker push ${imageN}${imageTagGET}"
+				sh "docker push ${imageN}${imageTag}"
 			}
         }
     }
