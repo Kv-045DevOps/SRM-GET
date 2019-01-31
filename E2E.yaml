@@ -13,10 +13,10 @@ metadata:
   namespace: testing
   name: services-address
 data:
-  POST_SERVICE_URL: post-service.production.svc
-  VIEW_SERVICE_URL: get-service.production.svc
-  DB_URL: db-service.production.svc
-  URL_DB: db-service.production.svc
+  POST_SERVICE_URL: post-service.testing.svc
+  VIEW_SERVICE_URL: get-service.testing.svc
+  DB_URL: db-service.testing.svc
+  URL_DB: db-service.testing.svc
 
 ---
 
