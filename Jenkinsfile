@@ -30,11 +30,12 @@ node(label)
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
             //imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            environment{
-	    IMAGE_TAG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
-	    }
-	    def imageTagG = IMAGE_TAG
+            def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
+	    def IMAGE_TAG
 
+        }
+	environment{
+        	IMAGE_TAG = imageTagG
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
