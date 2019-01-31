@@ -33,7 +33,7 @@ node(label)
             environment{
 	    IMAGE_TAG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
 	    }
-	    def imageTagG = env.IMAGE_TAG
+	    def imageTagG = IMAGE_TAG
 
         }
         stage ("Unit Tests"){
