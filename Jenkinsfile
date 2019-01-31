@@ -40,7 +40,7 @@ node(label)
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
-            sh 'echo "${IMAGE_TAG}"'
+            sh 'echo "${env.IMAGE_TAG}"'
             sh 'echo "${imageTagG}"'
         }
         stage("Test code using PyLint and version build"){
