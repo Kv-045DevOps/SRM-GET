@@ -29,10 +29,16 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            //imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            environment{
+	    IMAGE_TAG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
+	    }
+	    def imageTagG = env.IMAGE_TAG
+
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
+            sh 'echo ${imageTagG}'
         }
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
