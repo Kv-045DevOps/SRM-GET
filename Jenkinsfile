@@ -3,12 +3,24 @@ def label_f = "mypod-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
+  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
 ], serviceAccount: "jenkins")
+
+properties([
+    parameters([
+        stringParam(
+            defaultValue: 'v3.0', 
+            description: '', 
+            name: 'imageTag'),
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'namespace')
+    ])
+])
 
 {
 def app
@@ -61,12 +73,14 @@ node(label)
 				sh "docker push ${imageN}${params.imageTag}"
 			}
         }
+	stage("Test"){
+            
+            build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
+        	                        value: "${params.imageTag}"]], wait: true)
+        }
     }
     catch(err){
         currentBuild.result = 'Failure'
     }
 }
 }
-
-
-sleep 30

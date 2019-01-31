@@ -24,14 +24,3 @@ properties([
             }
             parallel jobs
         }
-        stage("Test"){
-            
-            build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
-        	                        value: "${params.imageTag}"]], wait: true)
-        }
-        
-        stage("Deploy"){
-            
-            build (job: "test_deploy", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
-        	                        value: "${params.imageTag}"]], wait: true)
-        }

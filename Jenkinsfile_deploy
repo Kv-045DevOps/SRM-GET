@@ -1,0 +1,65 @@
+def label = "mypod-${UUID.randomUUID().toString()}"
+properties([
+    parameters([
+        stringParam(
+            defaultValue: 'v3.0', 
+            description: '', 
+            name: 'imageTag'),
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'namespace')
+    ])
+])
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+], serviceAccount: "jenkins") 
+{
+
+
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+
+node(label)
+{
+    try{
+        
+        stage("Deploy to Kubernetes"){
+            container('python-alpine'){
+                
+                sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/get-service ${params.imageTag}"
+                //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
+                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${params.imageTag}"
+                sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yaml ${dockerRegistry}/ui-service ${params.imageTag}"
+                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${params.imageTag}"
+            }
+			container('kubectl'){
+			def temp = [:]
+            temp = [
+                'ini':"${pathTocodeini}", 'db':"${pathTocodedb}", 
+                'get':"${pathTocodeget}", 'ui':"${pathTocodeui}"
+                //, 'post':"${pathTocodepost}"
+                ]
+            temp.each{ k, v -> sh "kubectl apply -f ${v}/template.yaml" }
+				//sh "kubectl apply -f ${pathTocodepost}/template.yml"
+				sh "kubectl get pods --namespace=production"
+				
+			}
+        }
+        stage ("Prod Tests"){
+            container('python-alpine'){
+                sh 'echo "Here is prod test"'
+	            sh "python3 ${pathTocodeget}/e2e-test-prod.py"
+          }
+        }
+    }
+    catch(err){
+        currentBuild.result = 'Failure'
+    }
+}
+}
