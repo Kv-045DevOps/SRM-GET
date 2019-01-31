@@ -32,10 +32,11 @@ node(label)
             //imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
             def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
 	    def IMAGE_TAG
+	    env.IMAGE_TAG = "QWERTY"
 
         }
 	environment{
-        	IMAGE_TAG = imageTagG
+        	IMAGE_TAG = "QWERTY"
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
