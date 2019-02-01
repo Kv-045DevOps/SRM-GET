@@ -12,10 +12,9 @@ def check_image():
     req = tmp.json()
     print(req)
     if req["name"] == sys.argv[1] and sys.argv[2] in req["tags"]:
-        print("First test good!!!")
         return 0
     else:
-        raise Exception("Image with tag " + sys.argv[1] + " does not exist in Docker Registry with IP: " + sys.argv[1])
+        #raise Exception("Image with tag " + sys.argv[1] + " does not exist in Docker Registry with IP: " + sys.argv[1])
         return 1
 
 
