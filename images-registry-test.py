@@ -10,11 +10,13 @@ def main():
 def check_image():
     tmp = requests.get("http://100.71.71.71:5000/v2/" + sys.argv[1] + "/tags/list")
     req = tmp.json()
-    print(req)
+    #print(req)
     if req["name"] == sys.argv[1] and sys.argv[2] in req["tags"]:
+        print("0")
         return 0
     else:
         #raise Exception("Image with tag " + sys.argv[1] + " does not exist in Docker Registry with IP: " + sys.argv[1])
+        print("1")
         return 1
 
 
