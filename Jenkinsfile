@@ -24,6 +24,14 @@ properties([
             defaultValue: "***", 
             description: '', 
             name: 'imageTagGET'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagUI'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagDB'),
         stringParam(
             defaultValue: '***', 
             description: '', 
@@ -57,8 +65,8 @@ node(label)
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
 				pathTocode = pwd()
-				//sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${params.imageTag}"
-				//sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
+				//sh "python3 ${pathTocodeget}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTag}"
+				sh "python3 ${pathTocodeget}/pylint-test.py ${pathTocode}/app/app.py"
 			}
         }
         stage("Build docker image"){
@@ -69,6 +77,7 @@ node(label)
 					sh "docker images"
                                 	sh "cat /etc/docker/daemon.json"
 					sh "docker push ${imageN}${imageTagGET}"
+					build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${imageTagGET}"]], wait: true)
         			} else {
             				echo "NO"
         			}
