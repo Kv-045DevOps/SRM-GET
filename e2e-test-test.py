@@ -1,5 +1,6 @@
 import os
 import requests
+import time
 
 def main():
     check_services()
@@ -14,6 +15,7 @@ def check_services():
     else:
         raise Exception("Fucking bitch!!!! Opssss")
     URL_GET = "http://ui-service.testing.svc:5000/salaries"
+    time.sleep(5)
     reques = requests.get(URL_GET)
     if reques.status_code == 200:
         print("UI success to GET")
