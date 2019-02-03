@@ -12,9 +12,9 @@ volumes: [
 properties([
     parameters([
         stringParam(
-            defaultValue: 'v3.0', 
+            defaultValue: "${params.imageTagGET}", 
             description: '', 
-            name: 'imageTag'),
+            name: 'imageTagGET'),
         stringParam(
             defaultValue: '***', 
             description: '', 
@@ -41,41 +41,45 @@ node(label)
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
             //sh "git rev-parse --short HEAD > .git/commit-id"
-            //imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
-	    def IMAGE_TAG
-            script{
-	    env.IMAGE_TAG = "QWERTY"
-            }
+            imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            //def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
 
         }
-	environment{
-        	IMAGE_TAG = "QWERTY"
+	stage("Test image_regisrty_check"){
+            container("python-alpine"){
+                check_new = (sh (script: "python3 ${pathTocodeget}/images-registry-test.py get-service ${imageTagGET}", returnStdout:true).trim())
+                echo "${check_new}"
+                echo "${params.imageTagGET}"
+                echo "${imageTagGET}"
+            }
+        }
+        if ("${tmp}" == "${check_new}"){
+            echo "YES"
+        } else {
+            echo "NO"
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
-            sh 'echo "${IMAGE_TAG}"'
-            sh 'echo "${imageTagG}"'
         }
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
 				pathTocode = pwd()
-				sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${params.imageTag}"
-				sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
+				//sh "python3 ${pathTocode}/sed_python.py template.yaml ${dockerRegistry}/get-service ${params.imageTag}"
+				//sh "python3 ${pathTocode}/pylint-test.py ${pathTocode}/app/app.py"
 			}
         }
         stage("Build docker image"){
 			container('docker'){
 				pathdocker = pwd()
-				sh "docker build ${pathdocker} -t ${imageN}${params.imageTag}"
-				sh "docker images"
-                                sh "cat /etc/docker/daemon.json"
-				sh "docker push ${imageN}${params.imageTag}"
+				//sh "docker build ${pathdocker} -t ${imageN}${params.imageTag}"
+				//sh "docker images"
+                                //sh "cat /etc/docker/daemon.json"
+				//sh "docker push ${imageN}${params.imageTag}"
 			}
         }
 	stage("Test"){
             
-            build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
+            //build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
         	                        value: "${params.imageTag}"]], wait: true)
         }
     }
