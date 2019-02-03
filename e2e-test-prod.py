@@ -18,6 +18,7 @@ def check_services():
     if reques.status_code == 200:
         print("Test success to UI-GET/salaries")
     else:
+        print(reques.status_code)
         raise Exception("Fucking bitch again!!!! Opssss. You are ....")
         
 if __name__ == '__main__':
