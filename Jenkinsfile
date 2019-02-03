@@ -80,7 +80,7 @@ node(label)
 	stage("Test"){
             
             //build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
-        	                        value: "${params.imageTag}"]], wait: true)
+        	                        //value: "${params.imageTag}"]], wait: true)
         }
     }
     catch(err){
