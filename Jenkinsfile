@@ -21,9 +21,9 @@ def imageN = '100.71.71.71:5000/get-service:'
 properties([
     parameters([
         stringParam(
-            defaultValue: "${params.imageTagGET}", 
+            defaultValue: "***", 
             description: '', 
-            name: 'imageTag'),
+            name: 'imageTagGET'),
         stringParam(
             defaultValue: '***', 
             description: '', 
@@ -50,17 +50,7 @@ node(label)
                 echo "${check_new}"
             }
         }
-        if ("${tmp}" == "${check_new}"){
-            echo "YES"
-        } else {
-            echo "NO"
-        }
-        if ("${params.imageTagGET}" == "${imageTagGET}"){
-            echo "${params.imageTagGET}"
-        } else {
-            echo "${params.imageTagGET}"
-            echo "${imageTagGET}"
-        }
+        
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
         }
@@ -74,10 +64,15 @@ node(label)
         stage("Build docker image"){
 			container('docker'){
 				pathdocker = pwd()
-				//sh "docker build ${pathdocker} -t ${imageN}${params.imageTag}"
-				//sh "docker images"
-                //sh "cat /etc/docker/daemon.json"
-				//sh "docker push ${imageN}${params.imageTag}"
+                                if ("${tmp}" == "${check_new}"){
+                                	sh "docker build ${pathdocker} -t ${imageN}${imageTagGET}"
+					sh "docker images"
+                                	sh "cat /etc/docker/daemon.json"
+					sh "docker push ${imageN}${imageTagGET}"
+        			} else {
+            				echo "NO"
+        			}
+				
 			}
         }
     }
