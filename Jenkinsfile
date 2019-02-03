@@ -11,7 +11,7 @@ volumes: [
 properties([
     parameters([
         stringParam(
-            defaultValue: "${params.imageTagGET}", 
+            defaultValue: "***", 
             description: '', 
             name: 'imageTagGET'),
         stringParam(
