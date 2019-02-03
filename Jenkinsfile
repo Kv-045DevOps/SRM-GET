@@ -18,6 +18,20 @@ def imageVersion = "v2"
 def imageName = "100.71.71.71:5000/get-service:${imageVersion}"
 def imageN = '100.71.71.71:5000/get-service:'
 
+properties([
+    parameters([
+        stringParam(
+            defaultValue: "${params.imageTagGET}", 
+            description: '', 
+            name: 'imageTag'),
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'namespace')
+    ])
+])
+
+
 node(label)
 {
     try{
@@ -40,6 +54,12 @@ node(label)
             echo "YES"
         } else {
             echo "NO"
+        }
+        if ("${params.imageTagGET}" == "${imageTagGET}"){
+            echo "${params.imageTagGET}"
+        } else {
+            echo "${params.imageTagGET}"
+            echo "${imageTagGET}"
         }
         stage ("Unit Tests"){
             sh 'echo "Here will be unit tests"'
