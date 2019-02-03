@@ -8,18 +8,7 @@ volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
 ], serviceAccount: "jenkins")
 
-properties([
-    parameters([
-        stringParam(
-            defaultValue: "***", 
-            description: '', 
-            name: 'imageTagGET'),
-        stringParam(
-            defaultValue: '***', 
-            description: '', 
-            name: 'namespace')
-    ])
-])
+
 
 {
 def app
