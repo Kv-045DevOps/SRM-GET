@@ -1,18 +1,16 @@
 def label = "mypod-${UUID.randomUUID().toString()}"
 
+
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true)
+  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
-], serviceAccount: "jenkins")
-
-
-
+], serviceAccount: "jenkins") 
 {
-def app
-def imageTagGET
+
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 def projName = "get-service"
@@ -23,21 +21,19 @@ def imageN = '100.71.71.71:5000/get-service:'
 node(label)
 {
     try{
-        stage("Git Checkout"){
-            git(
-                branch: "test",
-                url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
-                credentialsId: "${Creds}")
-            imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            //def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
-
+        stage("Pre-Test"){
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            tmp = "1"
+            //imageTagGET = sh(returnStdout: true, script: "git tag -l --points-at HEAD").trim()
+            pathTocodeget = pwd()
+            }
         }
-	stage("Test image_regisrty_check"){
+        stage("Test image_regisrty_check"){
             container("python-alpine"){
                 check_new = (sh (script: "python3 ${pathTocodeget}/images-registry-test.py get-service ${imageTagGET}", returnStdout:true).trim())
                 echo "${check_new}"
-                echo "${params.imageTagGET}"
-                echo "${imageTagGET}"
             }
         }
         if ("${tmp}" == "${check_new}"){
@@ -60,14 +56,9 @@ node(label)
 				pathdocker = pwd()
 				//sh "docker build ${pathdocker} -t ${imageN}${params.imageTag}"
 				//sh "docker images"
-                                //sh "cat /etc/docker/daemon.json"
+                //sh "cat /etc/docker/daemon.json"
 				//sh "docker push ${imageN}${params.imageTag}"
 			}
-        }
-	stage("Test"){
-            sh "echo AAA"
-            //build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
-        	                        //value: "${params.imageTag}"]], wait: true)
         }
     }
     catch(err){
