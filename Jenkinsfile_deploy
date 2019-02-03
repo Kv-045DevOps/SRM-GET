@@ -66,6 +66,17 @@ node(label)
         
         }
         stage("Deploy to Kubernetes"){
+            if(params.imageTagDB != "***"){
+		container("python-alpine"){
+                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${params.imageTagDB}"
+                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${params.imageTagDB}"    
+	    }
+		container ("kubectl"){
+		    sh "kubectl apply -f ${pathTocodeini}/template.yaml"
+			sh "kubectl apply -f ${pathTocodedb}/template.yaml"
+			
+	    }
+	    }
             if(params.imageTagGET != "***"){
 		container("python-alpine"){
 			sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/get-service ${params.imageTagGET}"    
@@ -82,17 +93,7 @@ node(label)
 			sh "kubectl apply -f ${pathTocodeui}/template.yaml"
 	    }
 	    }
-            if(params.imageTagDB != "***"){
-		container("python-alpine"){
-                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${params.imageTagDB}"
-                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${params.imageTagDB}"    
-	    }
-		container ("kubectl"){
-			sh "kubectl apply -f ${pathTocodeini}/template.yaml"
-			sh "kubectl apply -f ${pathTocodedb}/template.yaml"
-			
-	    }
-	    }
+            
             if(params.imageTagPOST != "***"){
 		container("python-alpine"){
                 //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodepost}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
@@ -103,7 +104,7 @@ node(label)
             }    
         }
 
-	sleep 20
+	sleep 30
 
         stage ("Prod Tests"){
             container('python-alpine'){
