@@ -66,7 +66,7 @@ node(label)
 			container('python-alpine'){
 				pathTocode = pwd()
 				//sh "python3 ${pathTocodeget}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTag}"
-				sh "python3 ${pathTocodeget}/pylint-test.py ${pathTocode}/app/app.py"
+				sh "python3 ${pathTocodeget}/pylint-test.py ${pathTocodeget}/app/app.py"
 			}
         }
         stage("Build docker image"){
