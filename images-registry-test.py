@@ -11,7 +11,7 @@ def check_image():
     tmp = requests.get("http://100.71.71.71:5000/v2/" + sys.argv[1] + "/tags/list")
     req = tmp.json()
     #print(req)
-    if (req.status_code == "404"):
+    if (tmp.status_code == 404):
         print("1")
         return 1
     else:
