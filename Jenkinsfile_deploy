@@ -1,10 +1,22 @@
+
 def label = "mypod-${UUID.randomUUID().toString()}"
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+
 properties([
     parameters([
         stringParam(
-            defaultValue: 'v3.0', 
+            defaultValue: "***", 
             description: '', 
-            name: 'imageTag'),
+            name: 'imageTagGET'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagUI'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagDB'),
         stringParam(
             defaultValue: '***', 
             description: '', 
@@ -22,41 +34,82 @@ volumes: [
 {
 
 
-def dockerRegistry = "100.71.71.71:5000"
-def Creds = "git_cred"
-
 node(label)
 {
     try{
-        
-        stage("Deploy to Kubernetes"){
-            container('python-alpine'){
-                
-                sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/get-service ${params.imageTag}"
-                //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
-                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${params.imageTag}"
-                sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yaml ${dockerRegistry}/ui-service ${params.imageTag}"
-                sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${params.imageTag}"
+        stage("Pre-Test"){
+            dir('db'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-DB.git', credentialsId: "${Creds}")
+            imageTagDB = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodedb=pwd()
             }
-			container('kubectl'){
-			def temp = [:]
-            temp = [
-                'ini':"${pathTocodeini}", 'db':"${pathTocodedb}", 
-                'get':"${pathTocodeget}", 'ui':"${pathTocodeui}"
-                //, 'post':"${pathTocodepost}"
-                ]
-            temp.each{ k, v -> sh "kubectl apply -f ${v}/template.yaml" }
-				//sh "kubectl apply -f ${pathTocodepost}/template.yml"
-				sh "kubectl get pods --namespace=production"
-				
-			}
+            dir('ui'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-UI.git', credentialsId: "${Creds}")
+            imageTagUI = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodeui=pwd()
+            }
+            dir('post'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-POST.git', credentialsId: "${Creds}")
+            imageTagPOST = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodepost=pwd()
+            }
+            dir('ini'){
+            git(branch: "master", url: 'https://github.com/Kv-045DevOps/Kubik-DB.git', credentialsId: "${Creds}")
+            imageTagINI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeini=pwd()
+            }
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeget = pwd()
+            }
+        
         }
+        stage("Deploy to Kubernetes"){
+            if(params.imageTagGET != "***"){
+		container("python-alpine"){
+			sh "python3 ${pathTocodeget}/sed_python.py ${pathTocodeget}/template.yaml ${dockerRegistry}/get-service ${params.imageTagGET}"    
+	    }
+		container ("kubectl"){
+			sh "kubectl apply -f ${pathTocodeget}/template.yaml"
+	    }
+	    }
+	    if(params.imageTagUI != "***"){
+		container("python-alpine"){
+                  sh "python3 ${pathTocodeui}/sed_python.py ${pathTocodeui}/template.yaml ${dockerRegistry}/ui-service ${params.imageTagUI}"    
+	    }
+		container ("kubectl"){
+			sh "kubectl apply -f ${pathTocodeui}/template.yaml"
+	    }
+	    }
+            if(params.imageTagDB != "***"){
+		container("python-alpine"){
+                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/db-service ${params.imageTagDB}"
+                  sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodedb}/template.yaml ${dockerRegistry}/init-container ${params.imageTagDB}"    
+	    }
+		container ("kubectl"){
+			sh "kubectl apply -f ${pathTocodedb}/template.yaml"
+	    }
+	    }
+            if(params.imageTagPOST != "***"){
+		container("python-alpine"){
+                //sh "python3 ${pathTocodepost}/sed_python.py ${pathTocodepost}/template.yaml ${dockerRegistry}/post-service ${imageTagPOST}"
+	    }
+		container ("kubectl"){
+			//sh "kubectl apply -f ${pathTocodepost}/template.yaml"
+	    }
+            }    
+        }
+
+	sleep 20
+
         stage ("Prod Tests"){
             container('python-alpine'){
                 sh 'echo "Here is prod test"'
 	            sh "python3 ${pathTocodeget}/e2e-test-prod.py"
           }
         }
+        
     }
     catch(err){
         currentBuild.result = 'Failure'

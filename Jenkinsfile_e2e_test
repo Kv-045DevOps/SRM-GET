@@ -1,6 +1,28 @@
 def label = "mypod-${UUID.randomUUID().toString()}"
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
+
+properties([
+    parameters([
+        stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagGET'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagUI'),
+	stringParam(
+            defaultValue: "***", 
+            description: '', 
+            name: 'imageTagDB'),
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'namespace')
+    ])
+])
+
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
@@ -11,33 +33,60 @@ volumes: [
 ], serviceAccount: "jenkins") 
 {
 
-properties([
-    parameters([
-        stringParam(
-            defaultValue: 'v3.0', 
-            description: '', 
-            name: 'imageTag'),
-        stringParam(
-            defaultValue: '***', 
-            description: '', 
-            name: 'namespace')
-    ])
-])
 
 node(label)
 {
     try{
+        stage("Pre-Test"){
+            dir('db'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-DB.git', credentialsId: "${Creds}")
+            imageTagDB = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodedb=pwd()
+            }
+            dir('ui'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-UI.git', credentialsId: "${Creds}")
+            imageTagUI = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodeui=pwd()
+            }
+            dir('post'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-POST.git', credentialsId: "${Creds}")
+            imageTagPOST = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            pathTocodepost=pwd()
+            }
+            dir('ini'){
+            git(branch: "master", url: 'https://github.com/Kv-045DevOps/Kubik-DB.git', credentialsId: "${Creds}")
+            imageTagINI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeini=pwd()
+            }
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            pathTocodeget = pwd()
+            }
         
+        }
         stage("E2E-Test-pre"){
             container('python-alpine'){
-            sh "ls /home/jenkins/workspace/"
             def map = [:]
             map = [
-                'get':[tag: "${params.imageTag}", path: "${pathTocodeget}"], 'post':[tag: "${params.imageTag}", path: "${pathTocodepost}"], 
-                'db':[tag: "${params.imageTag}", path: "${pathTocodedb}"], 'ui':[tag: "${params.imageTag}", path: "${pathTocodeui}"]
+                'get':[tag: "${imageTagGET}", path: "${pathTocodeget}"], 'post':[tag: "${imageTagPOST}", path: "${pathTocodepost}"], 
+                'db':[tag: "${imageTagDB}", path: "${pathTocodedb}"], 'ui':[tag: "${imageTagUI}", path: "${pathTocodeui}"]
                 ]
+            if(params.imageTagGET != "***"){
+		map['get']['tag'] = "${params.imageTagGET}"
+	    }
+	    if(params.imageTagUI != "***"){
+		map['ui']['tag'] = "${params.imageTagUI}"
+	    }
+            if(params.imageTagDB != "***"){
+		map['db']['tag'] = "${params.imageTagDB}"
+	    }
+            if(params.imageTagPOST != "***"){
+		map['post']['tag'] = "${params.imageTagPOST}"
+	    }
+	    echo "${map}"
             map.each{ k, v -> sh "python3 ${v['path']}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/${k}-service ${v['tag']}" }
-            sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/init-container ${params.imageTag}"
+            sh "python3 ${pathTocodedb}/sed_python.py ${pathTocodeget}/E2E.yaml ${dockerRegistry}/init-container ${map['db']['tag']}"
             }
              
         }
@@ -51,16 +100,17 @@ node(label)
         stage ("E2E Tests - Stage 2"){
             container('python-alpine'){
                 sh 'echo "Here is e2e test"'
-	            sh "python3 ${pathTocodeget}/e2e-test-test.py"
+	        sh "python3 ${pathTocodeget}/e2e-test-test.py"
           }
         }
-	stage("Deploy"){
+
+	stage ("Deploy"){
             
-            build (job: "test_deploy", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
-        	                        value: "${params.imageTag}"]], wait: true)
+		build(job: 'test_deploy', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${params.imageTagGET}"],
+		[$class: 'StringParameterValue', name:"imageTagUI", value: "${params.imageTagUI}"],
+		[$class: 'StringParameterValue', name:"imageTagDB", value: "${params.imageTagDB}"],
+		[$class: 'StringParameterValue', name:"imageTagPOST", value: "${params.imageTagPOST}"]], wait: true)
         }
-
-
         
     }
     catch(err){
