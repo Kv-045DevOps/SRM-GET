@@ -13,15 +13,12 @@ def check_services():
         print("Tests UI successfull pass")
     else:
         raise Exception("Fucking bitch!!!! Opssss")
-        return 1
     URL_GET = "http://ui-service.production.svc:5000/salaries"
     reques = requests.get(URL_GET)
     if reques.status_code == 200:
         print("Test success to UI-GET/salaries")
-        return 0
     else:
         raise Exception("Fucking bitch again!!!! Opssss. You are ....")
-        return -1
         
 if __name__ == '__main__':
     main()
