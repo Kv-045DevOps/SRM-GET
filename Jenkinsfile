@@ -1,5 +1,4 @@
 def label = "mypod-${UUID.randomUUID().toString()}"
-def label_f = "mypod-${UUID.randomUUID().toString()}"
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
@@ -40,7 +39,6 @@ node(label)
                 branch: "test",
                 url: 'https://github.com/Kv-045DevOps/SRM-GET.git',
                 credentialsId: "${Creds}")
-            //sh "git rev-parse --short HEAD > .git/commit-id"
             imageTagGET = sh (script: "git rev-parse --short HEAD", returnStdout: true)
             //def imageTagG = sh(returnStdout: true, script: "git tag --sort version:refname | tail -1")
 
@@ -78,7 +76,7 @@ node(label)
 			}
         }
 	stage("Test"){
-            
+            sh "echo AAA"
             //build (job: "test_e2e", parameters: [[$class: 'StringParameterValue', name: "imageTag", 
         	                        //value: "${params.imageTag}"]], wait: true)
         }
