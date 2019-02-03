@@ -65,7 +65,7 @@ node(label)
 			container('docker'){
 				pathdocker = pwd()
                                 if ("${tmp}" == "${check_new}"){
-                                	sh "docker build ${pathdocker} -t ${imageN}${imageTagGET}"
+                                	sh "docker build ${pathTocodeget} -t ${imageN}${imageTagGET}"
 					sh "docker images"
                                 	sh "cat /etc/docker/daemon.json"
 					sh "docker push ${imageN}${imageTagGET}"
