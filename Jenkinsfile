@@ -22,15 +22,15 @@ properties([
         stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagGET'),
+            name: 'imageTagGET_'),
 	stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagUI'),
+            name: 'imageTagUI_'),
 	stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagDB'),
+            name: 'imageTagDB_'),
         stringParam(
             defaultValue: '***', 
             description: 'Name', 
@@ -58,6 +58,8 @@ node(label)
             container("python-alpine"){
                 check_new = (sh (script: "python3 /images-registry-test.py get-service ${imageTagGET}", returnStdout:true).trim())
                 echo "${check_new}"
+		echo "${imageTagGET}"
+		echo "${params.imageTagGET_}"
 		echo "${params.e2e_YAML}"
             }
         }

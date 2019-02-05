@@ -1,5 +1,5 @@
 def buildResult
-def paramss = ["GitHub/SRM-GET/test", "GitHub/SRM-UI/test", "GitHub/SRM-DB/test"]
+def paramss = ["GitHub/SRM-GET/PR-3"]
 properties([
     parameters([
         stringParam(
@@ -322,7 +322,7 @@ spec:
     spec:
       containers:
       - name: get
-        image: 100.71.71.71:5000/get-service:{params.imageTagGET}
+        image: 100.71.71.71:5000/get-service:${params.imageTagGET}
         ports:
         - containerPort: 5003
         env:
@@ -335,13 +335,23 @@ spec:
 """
 
         stage('Build and push Docker images') {
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-DB.git', credentialsId: "${Creds}")
+            imageTagDB = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-UI.git', credentialsId: "${Creds}")
+            imageTagUI = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-POST.git', credentialsId: "${Creds}")
+            imageTagPOST = sh (script: "git rev-parse --short HEAD", returnStdout: true)
+            git(branch: "master", url: 'https://github.com/Kv-045DevOps/Kubik-DB.git', credentialsId: "${Creds}")
+            imageTagINI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
             def jobs = [:]
             for(i = 0; i < paramss.size(); i += 1) {
                 def param = paramss[i]
                 jobs["Jobs_build_${i}"] = {
-                    build job: param, parameters: [[$class: 'StringParameterValue', name: "imageTagGET", value: "${params.imageTagGET}"],
-						   [$class: 'StringParameterValue', name: "imageTagUI", value: "${params.imageTagUI}"],
-						   [$class: 'StringParameterValue', name: "imageTagDB", value: "${params.imageTagDB}"],
+                    build job: param, parameters: [[$class: 'StringParameterValue', name: "imageTagGET", value: "${imageTagGET}"],
+						   [$class: 'StringParameterValue', name: "imageTagUI", value: "${imageTagUI}"],
+						   [$class: 'StringParameterValue', name: "imageTagDB", value: "${imageTagDB}"],
 						   [$class: 'StringParameterValue', name: "e2e_YAML", value: "${e2e_YAML}"]], wait: true
                 }
             }
