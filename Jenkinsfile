@@ -2,9 +2,8 @@ def label = "mypod-${UUID.randomUUID().toString()}"
 
 
 podTemplate(label: label, containers: [
-  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v2', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
   hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
@@ -35,7 +34,11 @@ properties([
         stringParam(
             defaultValue: '***', 
             description: 'Name', 
-            name: 'namespace')
+            name: 'namespace'),
+	stringParam(
+            defaultValue: '***', 
+            description: '###', 
+            name: 'e2e_YAML')
     ])
 ])
 
@@ -48,14 +51,14 @@ node(label)
             git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
             imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
             tmp = "1"
-            //imageTagGET = sh(returnStdout: true, script: "git tag -l --points-at HEAD").trim()
             pathTocodeget = pwd()
             }
         }
         stage("Test image_regisrty_check"){
             container("python-alpine"){
-                check_new = (sh (script: "python3 ${pathTocodeget}/images-registry-test.py get-service ${imageTagGET}", returnStdout:true).trim())
+                check_new = (sh (script: "python3 /images-registry-test.py get-service ${imageTagGET}", returnStdout:true).trim())
                 echo "${check_new}"
+		echo "${params.e2e_YAML}"
             }
         }
         
@@ -64,9 +67,8 @@ node(label)
         }
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
-				pathTocode = pwd()
 				//sh "python3 ${pathTocodeget}/sed_python.py template.yaml ${dockerRegistry}/get-service ${imageTag}"
-				sh "python3 ${pathTocodeget}/pylint-test.py ${pathTocodeget}/app/app.py"
+				sh "python3 /pylint-test.py ${pathTocodeget}/app/app.py"
 			}
         }
         stage("Build docker image"){
@@ -77,7 +79,7 @@ node(label)
 					sh "docker images"
                                 	sh "cat /etc/docker/daemon.json"
 					sh "docker push ${imageN}${imageTagGET}"
-					build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${imageTagGET}"]], wait: true)
+		//build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${imageTagGET}"]], wait: true)
         			} else {
             				echo "NO"
         			}
