@@ -60,7 +60,6 @@ node(label)
                 echo "${check_new}"
 		echo "${imageTagGET}"
 		echo "${params.imageTagGET_}"
-		echo "${params.e2e_YAML}"
             }
         }
         
@@ -81,7 +80,9 @@ node(label)
 					sh "docker images"
                                 	sh "cat /etc/docker/daemon.json"
 					sh "docker push ${imageN}${imageTagGET}"
-		//build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${imageTagGET}"]], wait: true)
+					build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${imageTagGET}"],
+									   [$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
+									   [$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"]], wait: true)
         			} else {
             				echo "NO"
         			}

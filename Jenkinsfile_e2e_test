@@ -7,25 +7,24 @@ properties([
         stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagGET'),
+            name: 'imageTagGET_'),
 	stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagUI'),
+            name: 'imageTagUI_'),
 	stringParam(
             defaultValue: "***", 
             description: '', 
-            name: 'imageTagDB'),
+            name: 'imageTagDB_'),
         stringParam(
             defaultValue: '***', 
             description: '', 
-            name: 'namespace')
+            name: 'e2e_YAML')
     ])
 ])
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
@@ -38,38 +37,14 @@ node(label)
 {
     try{
         stage("Pre-Test"){
-            dir('db'){
-            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-DB.git', credentialsId: "${Creds}")
-            imageTagDB = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            pathTocodedb=pwd()
-            }
-            dir('ui'){
-            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-UI.git', credentialsId: "${Creds}")
-            imageTagUI = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            pathTocodeui=pwd()
-            }
-            dir('post'){
-            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-POST.git', credentialsId: "${Creds}")
-            imageTagPOST = sh (script: "git rev-parse --short HEAD", returnStdout: true)
-            pathTocodepost=pwd()
-            }
-            dir('ini'){
-            git(branch: "master", url: 'https://github.com/Kv-045DevOps/Kubik-DB.git', credentialsId: "${Creds}")
-            imageTagINI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
-            pathTocodeini=pwd()
-            }
-            dir('get'){
-            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
-            imageTagGET = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
-            pathTocodeget = pwd()
-            }
+            
         
         }
         stage("E2E-Test-pre"){
             container('python-alpine'){
             def map = [:]
             map = [
-                'get':[tag: "${imageTagGET}", path: "${pathTocodeget}"], 'post':[tag: "${imageTagPOST}", path: "${pathTocodepost}"], 
+                'get':[tag: "${params.imageTagGET_}", path: "${pathTocodeget}"], 'post':[tag: "${imageTagPOST}", path: "${pathTocodepost}"], 
                 'db':[tag: "${imageTagDB}", path: "${pathTocodedb}"], 'ui':[tag: "${imageTagUI}", path: "${pathTocodeui}"]
                 ]
             if(params.imageTagGET != "***"){
