@@ -64,7 +64,7 @@ node(label)
         }
         
         stage ("Unit Tests"){
-            sh 'echo "Here will be unit tests"'
+            sh 'echo "Here will be unit testss"'
         }
         stage("Test code using PyLint and version build"){
 			container('python-alpine'){
