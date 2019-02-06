@@ -38,7 +38,11 @@ properties([
 	stringParam(
             defaultValue: '***', 
             description: '###', 
-            name: 'e2e_YAML')
+            name: 'e2e_YAML'),
+	stringParam(
+            defaultValue: '', 
+            description: 'TAG', 
+            name: 'service')
     ])
 ])
 
@@ -82,7 +86,8 @@ node(label)
 					sh "docker push ${imageN}${imageTagGET}"
 					build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${imageTagGET}"],
 									   [$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
-									   [$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"]], wait: true)
+									   [$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"],
+									   [$class: 'StringParameterValue', name:"service", value: "get"]], wait: true)
         			} else {
             				echo "NO"
         			}
