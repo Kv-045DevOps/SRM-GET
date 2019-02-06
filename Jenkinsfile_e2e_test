@@ -178,48 +178,6 @@ spec:
   - protocol: TCP
     port: 5002
     targetPort: 5002
-#---
-#kind: Service
-#apiVersion: v1
-#metadata:
-#  namespace: testing
-#  name: post-service
-#  labels:
-#    app: post
-#spec:
-# selector:
-#    app: post
-#  ports:
-#  - protocol: TCP
-#    port: 5001
-#    targetPort: 5001
-#---
-#apiVersion: apps/v1
-#kind: Deployment
-#metadata:
-#  namespace: testing
-#  name: post-deployment
-#spec:
-#  selector:
-#    matchLabels:
-#      app: post
-#  replicas: 1
-#  template:
-#    metadata:
-#      labels:
-#        app: post
-#    spec:
-#      containers:
-#      - name: post
-#        image: 100.71.71.71:5000/post-service:2.1
-#        ports:
-#        - containerPort: 5001
-#        env:
-#        - name: DB_URL
-#          valueFrom:
-#            configMapKeyRef:
-#              name: services-address
-#              key: DB_URL
 ---
 kind: Service
 apiVersion: v1
@@ -257,11 +215,6 @@ spec:
         ports:
         - containerPort: 5000
         env:
-#        - name: POST_SERVICE_URL
-#          valueFrom:
-#            configMapKeyRef:
-#              name: services-address
-#              key: POST_SERVICE_URL
         - name: VIEW_SERVICE_URL
           valueFrom:
             configMapKeyRef:
@@ -355,8 +308,9 @@ node(label)
         stage("E2E Test - Stage 1"){
             container('kubectl'){
 		writeYaml file: 'temp.yaml', data: e2e_YAML
-            	sh "cat temp.yaml"
-                sh (script: "kubectl apply -n namespace -f temp.yaml", returnStdout: true)
+            	//sh 'echo "$e2e_YAML"'
+            	echo "$e2e_YAML"
+                sh """echo "$e2e_YAML" | kubectl apply -f -"""
                 sh "kubectl get pods --namespace=testing"
             }
         }
