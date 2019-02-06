@@ -38,7 +38,6 @@ metadata:
     app: pvc-postgres
   name: postgres-pvc
 spec:
-  #storageClassName: slow
   accessModes:
   - ReadWriteOnce
   resources:
@@ -61,7 +60,7 @@ spec:
       initContainers:
       - name: volume-mount-hack
         image: busybox
-        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/"]
+        command: ["sh", "-c", "chown -R 999.999 /var/lib/postgresql/"]
         volumeMounts:
         - name: postgres-pv-claim
           mountPath: /var/lib/postgresql/data
@@ -109,12 +108,15 @@ spec:
     port: 5432
     targetPort: 5432
 ---
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: testing
   name: db-service
 spec:
+  selector:
+    matchLabels:
+      app: db-service
   template:
     metadata:
       labels:
@@ -149,7 +151,7 @@ spec:
         - name: POSTGRES_HOST
           value: srmsystemdb
         - name: POSTGRES_PORT
-          value: "5432"
+          value: '5432'
         - name: PGDATABASE
           valueFrom:
             secretKeyRef:
