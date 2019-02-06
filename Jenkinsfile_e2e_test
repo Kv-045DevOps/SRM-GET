@@ -2,272 +2,315 @@ def label = "mypod-${UUID.randomUUID().toString()}"
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 
-String e2e_YAML = """
----    \
-apiVersion: v1              \
-kind: Namespace             \
-metadata:                   \
-  name: testing             \
----                         \
-apiVersion: v1              \
-kind: ConfigMap             \
-metadata:\
-  namespace: testing\
-  name: services-address\
-data:\
-  POST_SERVICE_URL: post-service.testing.svc\
-  VIEW_SERVICE_URL: get-service.testing.svc\
-  DB_URL: db-service.testing.svc\
-  URL_DB: db-service.testing.svc\
----\
-apiVersion: v1\
-kind: Secret\
-metadata:\
- name:  db-secret\
- namespace: testing\
-data:\
-  username:  ZGJhZG1pbg==\
-  password:  UGFzc3dvcmQ=\
-  dbname: c3Jtc3lzdGVt\
-type: Opaque\
----\
-apiVersion: v1\
-kind: PersistentVolumeClaim\
-metadata:\
-  namespace: testing\
-  labels:\
-    app: pvc-postgres\
-  name: postgres-pvc\
-spec:\
-  accessModes:\
-  - ReadWriteOnce\
-  resources:\
-    requests:\
-      storage: 2Gi\
----\
-apiVersion: extensions/v1beta1\
-kind: Deployment\
-metadata:\
-  namespace: testing\
-  name: postgres\
-  labels:\
-    service: postgresdb\
-spec:\
-  template:\
-    metadata:\
-      labels:\
-        app: postgres\
-    spec:\
-      initContainers:\
-      - name: volume-mount-hack\
-        image: busybox\
-        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/"]\
-        volumeMounts:\
-        - name: postgres-pv-claim\
-          mountPath: /var/lib/postgresql/data\
-          subPath: postgres\
-      containers:\
-      - image: postgres:9.6.2\
-        name: postgresql\
-        env:\
-        - name: POSTGRES_DB\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: dbname\
-        - name: POSTGRES_USER\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: username\
-        - name: POSTGRES_PASSWORD\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: password\
-        ports:\
-        - containerPort: 5432\
-        volumeMounts:\
-        - name: postgres-pv-claim\
-          mountPath: /var/lib/postgresql/data\
-          subPath: postgres\
-      volumes:\
-      - name: postgres-pv-claim\
-        persistentVolumeClaim:\
-          claimName: postgres-pvc\
----\
-kind: Service\
-apiVersion: v1\
-metadata:\
-  namespace: testing\
-  name: srmsystemdb\
-spec:\
-  selector:\
-    app: postgres\
-  ports:\
-  - protocol: TCP\
-    port: 5432\
-    targetPort: 5432\
----\
-apiVersion: extensions/v1beta1\
-kind: Deployment\
-metadata:\
-  namespace: testing\
-  name: db-service\
-spec:\
-  template:\
-    metadata:\
-      labels:\
-        app: db-service\
-    spec:\
-      initContainers:\
-      - image: 100.71.71.71:5000/init-container:${params.imageTagDB_}\
-        name: init-container-postgres\
-        env:\
-        - name: PGDATABASE\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: dbname\
-        - name: PGUSER\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: username\
-        - name: PGPASSWORD\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: password\
-        command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']\
-      containers:\
-      - image: 100.71.71.71:5000/db-service:${params.imageTagDB_}\
-        name: db-service\
-        ports:\
-        - containerPort: 5002\
-        env:\
-        - name: POSTGRES_HOST\
-          value: srmsystemdb\
-        - name: POSTGRES_PORT\
-          value: "5432"\
-        - name: PGDATABASE\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: dbname\
-        - name: PGUSER\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: username\
-        - name: PGPASSWORD\
-          valueFrom:\
-            secretKeyRef:\
-              name: db-secret\
-              key: password \
----\
-kind: Service\
-apiVersion: v1\
-metadata:\
-  namespace: testing\
-  name: db-service\
-spec:\
-  selector:\
-    app: db-service\
-  ports:\
-  - protocol: TCP\
-    port: 5002\
-    targetPort: 5002\
----\
-kind: Service\
-apiVersion: v1\
-metadata:\
-  namespace: testing\
-  name: ui-service\
-  labels:\
-    app: ui\
-spec:\
-  selector:\
-    app: ui\
-  ports:\
-  - protocol: TCP\
-    port: 5000\
-    targetPort: 5000\
----\
-apiVersion: apps/v1\
-kind: Deployment\
-metadata:\
-  namespace: testing\
-  name: ui-deployment\
-spec:\
-  selector:\
-    matchLabels:\
-      app: ui\
-  replicas: 1\
-  template:\
-    metadata:\
-      labels:\
-        app: ui\
-    spec:\
-      containers:\
-      - name: ui\
-        image: 100.71.71.71:5000/ui-service:${params.imageTagUI_}\
-        ports:\
-        - containerPort: 5000\
-        env:\
-#        - name: POST_SERVICE_URL\
-#          valueFrom:\
-#            configMapKeyRef:\
-#              name: services-address\
-#              key: POST_SERVICE_URL\
-        - name: VIEW_SERVICE_URL\
-          valueFrom:\
-            configMapKeyRef:\
-              name: services-address\
-              key: VIEW_SERVICE_URL\
----\
-kind: Service\
-apiVersion: v1\
-metadata:\
-  namespace: testing\
-  name: get-service\
-  labels:\
-    app: get\
-spec:\
-  selector:\
-    app: get\
-  ports:\
-  - protocol: TCP\
-    port: 5003\
-    targetPort: 5003\
----\
-apiVersion: apps/v1\
-kind: Deployment\
-metadata:\
-  namespace: testing\
-  name: get-deployment\
-spec:\
-  selector:\
-    matchLabels:\
-      app: get\
-  replicas: 1\
-  template:\
-    metadata:\
-      labels:\
-        app: get\
-    spec:\
-      containers:\
-      - name: get\
-        image: 100.71.71.71:5000/get-service:${params.imageTagGET_}\
-        ports:\
-        - containerPort: 5003\
-        env:\
-        - name: URL_DB\
-          valueFrom:\
-            configMapKeyRef:\
-              name: services-address\
-              key: URL_DB\
----                                 """
+String e2e_YAML = """---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: testing
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: testing
+  name: services-address
+data:
+  POST_SERVICE_URL: post-service.testing.svc
+  VIEW_SERVICE_URL: get-service.testing.svc
+  DB_URL: db-service.testing.svc
+  URL_DB: db-service.testing.svc
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name:  db-secret
+ namespace: testing
+data:
+  username:  ZGJhZG1pbg==
+  password:  UGFzc3dvcmQ=
+  dbname: c3Jtc3lzdGVt
+type: Opaque
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  namespace: testing
+  labels:
+    app: pvc-postgres
+  name: postgres-pvc
+spec:
+  #storageClassName: slow
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: testing
+  name: postgres
+  labels:
+    service: postgresdb
+spec:
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      initContainers:
+      - name: volume-mount-hack
+        image: busybox
+        command: ["sh", "-c", "chown -R 999:999 /var/lib/postgresql/"]
+        volumeMounts:
+        - name: postgres-pv-claim
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+      containers:
+      - image: postgres:9.6.2
+        name: postgresql
+        env:
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        ports:
+        - containerPort: 5432
+        volumeMounts:
+        - name: postgres-pv-claim
+          mountPath: /var/lib/postgresql/data
+          subPath: postgres
+      volumes:
+      - name: postgres-pv-claim
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: srmsystemdb
+spec:
+  selector:
+    app: postgres
+  ports:
+  - protocol: TCP
+    port: 5432
+    targetPort: 5432
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  namespace: testing
+  name: db-service
+spec:
+  template:
+    metadata:
+      labels:
+        app: db-service
+    spec:
+      initContainers:
+      - image: 100.71.71.71:5000/init-container:${params.imageTagDB_}
+        name: init-container-postgres
+        env:
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']
+      containers:
+      - image: 100.71.71.71:5000/db-service:${params.imageTagDB_}
+        name: db-service
+        ports:
+        - containerPort: 5002
+        env:
+        - name: POSTGRES_HOST
+          value: srmsystemdb
+        - name: POSTGRES_PORT
+          value: "5432"
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: db-service
+spec:
+  selector:
+    app: db-service
+  ports:
+  - protocol: TCP
+    port: 5002
+    targetPort: 5002
+#---
+#kind: Service
+#apiVersion: v1
+#metadata:
+#  namespace: testing
+#  name: post-service
+#  labels:
+#    app: post
+#spec:
+# selector:
+#    app: post
+#  ports:
+#  - protocol: TCP
+#    port: 5001
+#    targetPort: 5001
+#---
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  namespace: testing
+#  name: post-deployment
+#spec:
+#  selector:
+#    matchLabels:
+#      app: post
+#  replicas: 1
+#  template:
+#    metadata:
+#      labels:
+#        app: post
+#    spec:
+#      containers:
+#      - name: post
+#        image: 100.71.71.71:5000/post-service:2.1
+#        ports:
+#        - containerPort: 5001
+#        env:
+#        - name: DB_URL
+#          valueFrom:
+#            configMapKeyRef:
+#              name: services-address
+#              key: DB_URL
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: ui-service
+  labels:
+    app: ui
+spec:
+  selector:
+    app: ui
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: testing
+  name: ui-deployment
+spec:
+  selector:
+    matchLabels:
+      app: ui
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ui
+    spec:
+      containers:
+      - name: ui
+        image: 100.71.71.71:5000/ui-service:${params.imageTagUI_}
+        ports:
+        - containerPort: 5000
+        env:
+#        - name: POST_SERVICE_URL
+#          valueFrom:
+#            configMapKeyRef:
+#              name: services-address
+#              key: POST_SERVICE_URL
+        - name: VIEW_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: VIEW_SERVICE_URL
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: testing
+  name: get-service
+  labels:
+    app: get
+spec:
+  selector:
+    app: get
+  ports:
+  - protocol: TCP
+    port: 5003
+    targetPort: 5003
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: testing
+  name: get-deployment
+spec:
+  selector:
+    matchLabels:
+      app: get
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: get
+    spec:
+      containers:
+      - name: get
+        image: 100.71.71.71:5000/get-service:${params.imageTagGET_}
+        ports:
+        - containerPort: 5003
+        env:
+        - name: URL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: URL_DB
+---
+"""
 
 properties([
     parameters([
@@ -286,7 +329,11 @@ properties([
         stringParam(
             defaultValue: '***', 
             description: '', 
-            name: 'namespace')
+            name: 'namespace'),
+	stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'service')
     ])
 ])
 
@@ -307,7 +354,9 @@ node(label)
         
         stage("E2E Test - Stage 1"){
             container('kubectl'){
-                sh (script: "echo ${e2e_YAML} | kubectl apply -n namespace -f -", returnStdout: true)
+		writeYaml file: 'temp.yaml', data: e2e_YAML
+            	sh "cat temp.yaml"
+                sh (script: "kubectl apply -n namespace -f temp.yaml", returnStdout: true)
                 sh "kubectl get pods --namespace=testing"
             }
         }
