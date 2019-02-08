@@ -269,22 +269,6 @@ spec:
 
 properties([
     parameters([
-        stringParam(
-            defaultValue: "***", 
-            description: '', 
-            name: 'imageTagGET_'),
-	stringParam(
-            defaultValue: "***", 
-            description: '', 
-            name: 'imageTagUI_'),
-	stringParam(
-            defaultValue: "***", 
-            description: '', 
-            name: 'imageTagDB_'),
-        stringParam(
-            defaultValue: '***', 
-            description: '', 
-            name: 'namespace'),
 	stringParam(
             defaultValue: '***', 
             description: '', 
@@ -293,7 +277,7 @@ properties([
 ])
 
 podTemplate(label: label, containers: [
-  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v3', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true)
 ],
@@ -319,17 +303,18 @@ node(label)
         sleep 20
         stage ("E2E Tests - Stage 2"){
             container('python-alpine'){
-            //    sh 'echo "Here is e2e test"'
-	        //sh "python3 ${pathTocodeget}/e2e-test-test.py"
+            	sh 'echo "Here is e2e test"'
+	        sh "python3 /e2e-test-test.py"
           }
         }
 
 	stage ("Deploy"){
             
-		//build(job: 'test_deploy', parameters: [[$class: 'StringParameterValue', name:"imageTagGET", value: "${params.imageTagGET}"],
-		//[$class: 'StringParameterValue', name:"imageTagUI", value: "${params.imageTagUI}"],
-		//[$class: 'StringParameterValue', name:"imageTagDB", value: "${params.imageTagDB}"],
-		//[$class: 'StringParameterValue', name:"imageTagPOST", value: "${params.imageTagPOST}"]], wait: true)
+		build(job: 'test_deploy', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${params.imageTagGET_}"],
+		[$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
+		[$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"],
+		[$class: 'StringParameterValue', name:"imageTagPOST_", value: "${params.imageTagPOST_}"],
+		[$class: 'StringParameterValue', name:"service", value: "${params.service}"]], wait: true)
         }
         
     }
