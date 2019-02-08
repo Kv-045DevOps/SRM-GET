@@ -228,12 +228,11 @@ node(label)
 	    }    
         }
 
-	sleep 30
+	sleep 10
 
         stage ("Prod Tests"){
             container('python-alpine'){
-                sh 'echo "Here is prod test"'
-	            sh "python3 /e2e-test-prod.py"
+	            //sh "python3 /e2e-test-prod.py"
           }
         }
         
