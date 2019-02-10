@@ -7,7 +7,7 @@ def Creds = "git_cred"
 properties([
     parameters([
         stringParam(
-            defaultValue: '***', 
+            defaultValue: '*', 
             description: '', 
             name: 'service')
     ])
