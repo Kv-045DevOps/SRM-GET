@@ -39,26 +39,26 @@ node(label)
 	    build(job: 'GitHub/Kubik-DB/master', parameters: [[$class: 'StringParameterValue', name:"service", value: "***"]], wait: true)
             if(params.service == "db"){
 		container ("helm"){
-		    sh """helm upgrade --install --force --namespace production db-service ${pathTocodeget}/List-Helm-Charts/db-service --set deploy.version=v1 --set image.tag="$params.imageTagDB_" """
+		    sh """helm upgrade --install --force --namespace production db-service ${pathTocodeget}/List-Helm-Charts/db-service --set deploy.version=v1 --set image.tag="$params.imageTagDB_" --wait"""
 			
 	    }
 	    }
             if(params.service == "get"){
 		container ("helm"){
-		    sh """helm upgrade --install --force --namespace production get-service ${pathTocodeget}/List-Helm-Charts/get-service --set deploy.version=v1 --set image.tag="$params.imageTagGET_" """
+		    sh """helm upgrade --install --force --namespace production get-service ${pathTocodeget}/List-Helm-Charts/get-service --set deploy.version=v1 --set image.tag="$params.imageTagGET_" --wait"""
 			
 	    }
 	    }
 	    if(params.service == "ui"){
 		container ("helm"){
-		    sh """helm upgrade --install --force --namespace production ui-service ${pathTocodeget}/List-Helm-Charts/ui-service --set deploy.version=v1 --set image.tag="$params.imageTagUI_" """
+		    sh """helm upgrade --install --force --namespace production ui-service ${pathTocodeget}/List-Helm-Charts/ui-service --set deploy.version=v1 --set image.tag="$params.imageTagUI_" --wait"""
 			
 	    }
 	    }
             
             if(params.service == "post"){
 		container ("helm"){
-		    sh """helm upgrade --install --force --namespace production post-service ${pathTocodeget}/List-Helm-Charts/post-service --set deploy.version=v1 --set image.tag="$params.imageTagPOST_" """
+		    sh """helm upgrade --install --force --namespace production post-service ${pathTocodeget}/List-Helm-Charts/post-service --set deploy.version=v1 --set image.tag="$params.imageTagPOST_" --wait"""
 			
 	    }
 	    }    
