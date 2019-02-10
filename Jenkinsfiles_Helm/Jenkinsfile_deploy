@@ -1,0 +1,72 @@
+
+def label = "mypod-${UUID.randomUUID().toString()}"
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+
+
+properties([
+    parameters([
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'service')
+    ])
+])
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v3', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'kubectl', image: 'lachlanevenson/k8s-kubectl:v1.8.8', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'helm', image: 'ghostgoose33/kubectl_helm:v1', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+], serviceAccount: "jenkins") 
+{
+
+
+node(label)
+{
+    try{
+	stage("Pre-Test"){
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagUI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            tmp = "1"
+            pathTocodeget = pwd()
+            }
+        }
+        stage("Deploy to Kubernetes"){
+	    build(job: 'GitHub/Kubik-DB/master', parameters: [[$class: 'StringParameterValue', name:"service", value: "***"]], wait: true)
+            if(params.service == "db"){
+		container ("helm"){
+		    sh """helm upgrade --install --force --namespace production db-service ${pathTocodeget}/List-Helm-Charts/db-service --set deploy.version=v1 --set image.tag="$params.imageTagDB_" """
+			
+	    }
+	    }
+            if(params.service == "get"){
+		container ("helm"){
+		    sh """helm upgrade --install --force --namespace production get-service ${pathTocodeget}/List-Helm-Charts/get-service --set deploy.version=v1 --set image.tag="$params.imageTagGET_" """
+			
+	    }
+	    }
+	    if(params.service == "ui"){
+		container ("helm"){
+		    sh """helm upgrade --install --force --namespace production ui-service ${pathTocodeget}/List-Helm-Charts/ui-service --set deploy.version=v1 --set image.tag="$params.imageTagUI_" """
+			
+	    }
+	    }
+            
+            if(params.service == "post"){
+		container ("helm"){
+		    sh """helm upgrade --install --force --namespace production post-service ${pathTocodeget}/List-Helm-Charts/post-service --set deploy.version=v1 --set image.tag="$params.imageTagPOST_" """
+			
+	    }
+	    }    
+        }
+        
+    }
+    catch(err){
+        currentBuild.result = 'Failure'
+    }
+}
+}

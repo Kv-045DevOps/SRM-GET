@@ -1,0 +1,74 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: production
+  name: db-service
+spec:
+  selector:
+    matchLabels:
+      app: db-service
+  template:
+    metadata:
+      labels:
+        app: db-service
+    spec:
+      initContainers:
+      - image: "{{ .Values.image.repository }}/init-container:{{ .Values.image.tag }}"
+        name: init-container-postgres
+        env:
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
+        command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']
+      containers:
+      - image: "{{ .Values.image.repository }}/db-service:{{ .Values.image.tag }}"
+        name: db-service
+        ports:
+        - containerPort: 5002
+        env:
+        - name: POSTGRES_HOST
+          value: srmsystemdb
+        - name: POSTGRES_PORT
+          value: '5432'
+        - name: PGDATABASE
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbname
+        - name: PGUSER
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: username
+        - name: PGPASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password 
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: production
+  name: db-service
+spec:
+  selector:
+    app: db-service
+  ports:
+  - protocol: TCP
+    port: 5002
+    targetPort: 5002
+---
