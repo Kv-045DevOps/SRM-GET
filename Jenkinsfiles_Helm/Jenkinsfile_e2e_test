@@ -1,0 +1,59 @@
+def label = "mypod-${UUID.randomUUID().toString()}"
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+
+String e2e_YAML = """ """
+
+properties([
+    parameters([
+	stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'service')
+    ])
+])
+
+podTemplate(label: label, containers: [
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v3', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'helm', image: 'ghostgoose33/kubectl_helm:v1', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+], serviceAccount: "jenkins") 
+{
+
+
+node(label)
+{
+    try{
+        
+        stage("E2E Test - Stage 1"){
+            container('helm'){
+                sh "helm upgrade --install --namespace production --name e2e-testing ${pathTocodeui}/ui-service --set Values.deploy.version=v1 --set image.tag=${imageTagUI}"
+                sh "kubectl get pods --namespace=testing"
+            }
+        }
+        sleep 20
+        stage ("E2E Tests - Stage 2"){
+            container('python-alpine'){
+            	sh 'echo "Here is e2e test"'
+	        sh "python3 /e2e-test-test.py"
+          }
+        }
+
+	stage ("Deploy"){
+            
+		build(job: 'test_deploy', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${params.imageTagGET_}"],
+		[$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
+		[$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"],
+		[$class: 'StringParameterValue', name:"imageTagPOST_", value: "${params.imageTagPOST_}"],
+		[$class: 'StringParameterValue', name:"service", value: "${params.service}"]], wait: true)
+        }
+        
+    }
+    catch(err){
+        currentBuild.result = 'Failure'
+    }
+}
+}
