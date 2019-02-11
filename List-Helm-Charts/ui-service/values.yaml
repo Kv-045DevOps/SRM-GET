@@ -14,7 +14,7 @@ app:
 service:
   type: ClusterIP
   port: 5000
-  servicename: ui-service
+  servicename: ui
 
 namespace: production
 
