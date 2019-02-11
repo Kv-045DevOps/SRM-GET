@@ -1,12 +1,23 @@
+
 def label = "mypod-${UUID.randomUUID().toString()}"
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 
-String e2e_YAML = """a"""
+String deploy_db = """
+
+"""
+
+String deploy_ui = """
+
+"""
+
+String deploy_get = """
+
+"""
 
 properties([
     parameters([
-	stringParam(
+        stringParam(
             defaultValue: '***', 
             description: '', 
             name: 'service')
@@ -15,7 +26,6 @@ properties([
 
 podTemplate(label: label, containers: [
   containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v3', command: 'cat', ttyEnabled: true),
-  containerTemplate(name: 'docker', image: 'ghostgoose33/docker-in:v1', command: 'cat', ttyEnabled: true),
   containerTemplate(name: 'helm', image: 'ghostgoose33/kubectl_helm:v1', command: 'cat', ttyEnabled: true)
 ],
 volumes: [
@@ -27,38 +37,49 @@ volumes: [
 node(label)
 {
     try{
-        stage("Pre-Test"){
-            
+	stage("Pre-Test"){
+            dir('get'){
             git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
             imageTagUI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
             tmp = "1"
             pathTocodeget = pwd()
+            }
+        }
+        stage("Deploy to Kubernetes"){
+	    build(job: 'GitHub/Kubik-DB/master', parameters: [[$class: 'StringParameterValue', name:"service", value: "***"]], wait: true)
+            if(params.service == "db"){
+		container ("helm"){
+		    sh "helm upgrade --install --namespace production --force db-service ${pathTocodeget}/List-Helm-Charts/db-service --set=deploy.version=v1,image.tag=${db}"
+			
+	    }
+	    }
+            if(params.service == "get"){
+		container ("helm"){
+		    sh "helm upgrade --install --namespace production --force get-service ${pathTocodeget}/List-Helm-Charts/get-service --set=deploy.version=v1,image.tag=${get}"
+			
+	    }
+	    }
+	    if(params.service == "ui"){
+		container ("helm"){
+		    sh "helm upgrade --install --namespace production --force ui-service ${pathTocodeget}/List-Helm-Charts/ui-service --set=deploy.version=v1,image.tag=${ui}"
+			
+	    }
+	    }
             
-        }
-        stage("E2E Test - Stage 1"){
-            container('helm'){
-                sh "helm version"
-                sh """helm upgrade --install --force e2e-testing List-Helm-Charts/e2e-testing --set image.tag.ui="$params.imageTagUI_",image.tag.get="$params.imageTagGET_",image.tag.db="$params.imageTagDB_" --namespace testing"""
-            }
-        }
-        sleep 30
-        stage ("E2E Tests - Stage 2"){
-            container('helm'){
-                sh "kubectl get pods --namespace=testing"
-            }
-            container('python-alpine'){
-            	sh 'echo "Here is e2e test"'
-	        sh "python3 /e2e-test-test.py"
-          }
+            if(params.service == "post"){
+		container ("helm"){
+		    sh "helm upgrade --install --namespace production --force post-service ${pathTocodeget}/List-Helm-Charts/post-service --set=deploy.version=v1,image.tag=${post}"
+			
+	    }
+	    }    
         }
 
-	stage ("Deploy"){
-            
-		build(job: 'test_deploy', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${params.imageTagGET_}"],
-		[$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
-		[$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"],
-		[$class: 'StringParameterValue', name:"imageTagPOST_", value: "${params.imageTagPOST_}"],
-		[$class: 'StringParameterValue', name:"service", value: "${params.service}"]], wait: true)
+	sleep 10
+
+        stage ("Prod Tests"){
+            container('python-alpine'){
+	            //sh "python3 /e2e-test-prod.py"
+          }
         }
         
     }
