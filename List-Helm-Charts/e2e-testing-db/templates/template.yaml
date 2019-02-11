@@ -122,6 +122,10 @@ spec:
             secretKeyRef:
               name: db-secret
               key: dbname
+        - name: PGHOST
+          value: srmsystemdb
+        - name: PGPORT
+          value: '5432'
         - name: PGUSER
           valueFrom:
             secretKeyRef:
