@@ -14,9 +14,14 @@ spec:
         app: db-service
     spec:
       initContainers:
-      - image: "{{ .Values.image.repository }}/init-container:{{ .Values.image.tag }}"
+      - image: 100.71.71.71:5000/init-container:{{ .Values.image.tag }}
         name: init-container-postgres
         env:
+        - name: PGHOST
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbhost
         - name: PGDATABASE
           valueFrom:
             secretKeyRef:
@@ -32,17 +37,22 @@ spec:
             secretKeyRef:
               name: db-secret
               key: password
+        - name: PGPORT
+          value: "5432"
         command: ['sh', '-c', '/bin/bash /tmp/check_dump.sh']
       containers:
-      - image: "{{ .Values.image.repository }}/db-service:{{ .Values.image.tag }}"
+      - image: 100.71.71.71:5000/db-service:{{ .Values.image.tag }}
         name: db-service
         ports:
         - containerPort: 5002
         env:
         - name: POSTGRES_HOST
-          value: srmsystemdb
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: dbhost
         - name: POSTGRES_PORT
-          value: '5432'
+          value: "5432"
         - name: PGDATABASE
           valueFrom:
             secretKeyRef:
@@ -57,7 +67,7 @@ spec:
           valueFrom:
             secretKeyRef:
               name: db-secret
-              key: password 
+              key: password  
 ---
 kind: Service
 apiVersion: v1
