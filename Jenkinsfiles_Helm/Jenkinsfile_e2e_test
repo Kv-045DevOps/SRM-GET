@@ -3,6 +3,9 @@ def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 
 String e2e_YAML = """ """
+String get = "${params.imageTagGET_}"
+String ui = "${params.imageTagUI_}"
+String db = "${params.imageTagDB_}"
 
 properties([
     parameters([
@@ -37,7 +40,7 @@ node(label)
         }
         stage("E2E Test - Stage 1"){
             container('helm'){
-                sh "helm upgrade --install --force e2e-testing ${pathTocodeget}/List-Helm-Charts/e2e-testing --set=deploy.version=v1,image.tag.ui=${params.imageTagUI_},image.tag.get=${params.imageTagGET_},image.tag.db=${params.imageTagDB_} --namespace testing"
+                sh "helm upgrade --install --force e2e-testing ${pathTocodeget}/List-Helm-Charts/e2e-testing --set=deploy.version=v1,image.tag.ui=${ui},image.tag.get=${get},image.tag.db=${db} --namespace testing"
                 sh "kubectl get pods --namespace=testing"
             }
         }
