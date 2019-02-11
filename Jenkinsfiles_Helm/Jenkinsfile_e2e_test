@@ -37,8 +37,7 @@ node(label)
         }
         stage("E2E Test - Stage 1"){
             container('helm'){
-                sh """helm upgrade --install --force --namespace testing e2e-testing ${pathTocodeget}/List-Helm-Charts/e2e-testing --set deploy.version=v1,\
-                image.tag.ui=${params.imageTagUI_},image.tag.get=${params.imageTagGET_},image.tag.db=${params.imageTagDB_}"""
+                sh "helm upgrade --install --force --namespace testing e2e-testing ${pathTocodeget}/List-Helm-Charts/e2e-testing --set=deploy.version=v1,image.tag.ui=${params.imageTagUI_},image.tag.get=${params.imageTagGET_},image.tag.db=${params.imageTagDB_}"
                 sh "kubectl get pods --namespace=testing"
             }
         }
