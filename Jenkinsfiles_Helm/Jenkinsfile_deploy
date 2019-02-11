@@ -2,7 +2,7 @@ def label = "mypod-${UUID.randomUUID().toString()}"
 def dockerRegistry = "100.71.71.71:5000"
 def Creds = "git_cred"
 
-String e2e_YAML = """ """
+String e2e_YAML = """a"""
 
 properties([
     parameters([
