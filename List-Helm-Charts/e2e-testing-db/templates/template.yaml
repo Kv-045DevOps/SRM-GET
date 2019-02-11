@@ -11,6 +11,17 @@ data:
   URL_DB: db-service.testing.svc
 ---
 apiVersion: v1
+kind: Secret
+metadata:
+ name:  db-secret
+ namespace: {{ .Values.namespace }}
+data:
+  username:  ZGJhZG1pbg==
+  password:  UGFzc3dvcmQ=
+  dbname: c3Jtc3lzdGVt
+type: Opaque
+---
+apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   namespace: {{ .Values.namespace }}
