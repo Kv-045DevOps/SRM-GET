@@ -8,6 +8,9 @@ image:
   repository: 100.71.71.71:5000
   tag: ""
 
+conf:
+  ver: ""
+
 app:
   name: get
   version: ""

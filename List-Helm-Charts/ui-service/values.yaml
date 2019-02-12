@@ -9,6 +9,9 @@ image:
   tag: ""
   name: ui-service
 
+conf:
+  ver: ""
+
 app:
   name: ui
 

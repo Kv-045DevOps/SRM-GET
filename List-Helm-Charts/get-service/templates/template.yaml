@@ -41,5 +41,5 @@ spec:
         - name: URL_DB
           valueFrom:
             configMapKeyRef:
-              name: services-address
+              name: services-address-{{ .Values.conf.ver }}
               key: URL_DB
