@@ -21,15 +21,19 @@ spec:
   hosts:
   - "*"
   gateways:
-  - app-gateway
+  - srm-gateway
   http:
     - route:
       - destination:
           host: {{ .Values.app.name }}
           subset: v1
+          port:
+            number: {{ .Values.port }}
         weight: {{ .Values.weight.v1 }}
       - destination:
           host: {{ .Values.app.name }}
           subset: v2
+          port:
+            number: {{ .Values.port }}
         weight: {{ .Values.weight.v2 }}
 ---

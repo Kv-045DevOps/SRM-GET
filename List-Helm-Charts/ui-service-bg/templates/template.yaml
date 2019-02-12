@@ -3,7 +3,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   namespace: {{ .Values.namespace }}
-  name: ui-deployment
+  name: ui-deployment-{{ .Values.deploy.version }}
 spec:
   selector:
     matchLabels:
@@ -33,3 +33,19 @@ spec:
               name: services-address
               key: VIEW_SERVICE_URL
 ---
+---
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: "{{ .Values.service.servicename }}-{{ .Values.deploy.version }}
+  labels:
+    app: {{ .Values.app.name }}
+    version: {{ .Values.deploy.version }}
+spec:
+  selector:
+    app: {{ .Values.app.name }}
+  ports:
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000

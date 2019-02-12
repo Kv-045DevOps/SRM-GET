@@ -65,7 +65,7 @@ node(label)
                                 	sh "cat /etc/docker/daemon.json"
 					sh "docker push ${imageN}${imageTagGET}"
 					sleep 20
-					build(job: 'test_e2e', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${imageTagGET}"],
+					build(job: 'GitHub/GET-SERVICES/test1', parameters: [[$class: 'StringParameterValue', name:"imageTagGET_", value: "${imageTagGET}"],
 									   [$class: 'StringParameterValue', name:"imageTagUI_", value: "${params.imageTagUI_}"],
 									   [$class: 'StringParameterValue', name:"imageTagDB_", value: "${params.imageTagDB_}"],
 									   [$class: 'StringParameterValue', name:"service", value: "get"]], wait: true)

@@ -74,7 +74,7 @@ kind: Service
 apiVersion: v1
 metadata:
   namespace: production
-  name: db-service
+  name: db-service-{{ .Values.deploy.version }}
 spec:
   selector:
     app: db-service

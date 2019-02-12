@@ -3,7 +3,7 @@ kind: Service
 apiVersion: v1
 metadata:
   namespace: production
-  name: get-service
+  name: get-service-{{ .Values.deploy.version }}
   labels:
     app: get
 spec:
