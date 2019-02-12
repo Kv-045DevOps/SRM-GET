@@ -1,0 +1,93 @@
+
+def label = "mypod-${UUID.randomUUID().toString()}"
+def dockerRegistry = "100.71.71.71:5000"
+def Creds = "git_cred"
+
+properties([
+    parameters([
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'service'),
+        choice(choices: ['db', 'ui', 'get'], description: 'What Service?', name: 'service-del'),
+        choice(choices: ['v1', 'v2'], description: 'What version?', name: 'version-del')
+    ])
+])
+
+podTemplate(label: label, annotations: [podAnnotation(key: "sidecar.istio.io/inject", value: "false")], containers: [
+  containerTemplate(name: 'python-alpine', image: 'ghostgoose33/python-alp:v3', command: 'cat', ttyEnabled: true),
+  containerTemplate(name: 'helm', image: 'ghostgoose33/kubectl_helm:v1', command: 'cat', ttyEnabled: true)
+],
+volumes: [
+  hostPathVolume(mountPath: '/var/run/docker.sock', hostPath: '/var/run/docker.sock')
+], serviceAccount: "jenkins") 
+{
+
+
+node(label)
+{
+    try{
+	stage("Pre-Test"){
+            dir('get'){
+            git(branch: "test", url: 'https://github.com/Kv-045DevOps/SRM-GET.git', credentialsId: "${Creds}")
+            imageTagUI = (sh (script: "git rev-parse --short HEAD", returnStdout: true))
+            tmp = "1"
+            pathTocodeget = pwd()
+            }
+        }
+        stage("Deploy to Kubernetes"){
+            if(params.service-del == "db"){
+		    container ("helm"){
+		        if (params.version-del == "v2"){
+		            sh "helm delete db-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-db ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=db-service"
+		        }
+                if (params.version-del == "v1"){
+                    sh "helm delete db-service-v1 --purge"
+                }			
+	    }
+	    }
+            if(params.service-del == "get"){
+		container ("helm"){
+		        if (params.version-del == "v2"){
+		            sh "helm delete get-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-get ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=get"
+		        }
+                if (params.version-del == "v1"){
+                    sh "helm delete get-service-v1 --purge"
+                }			
+	    }
+	    }
+	    if(params.service-del == "ui"){
+		container ("helm"){
+		        if (params.version-del == "v2"){
+		            sh "helm delete ui-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-ui ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=ui"
+		        }
+                if (params.version-del == "v1"){
+                    sh "helm delete ui-service-v1 --purge"
+                }			
+	    }
+	    }
+            
+            if(params.service == "post"){
+		container ("helm"){
+		    
+	    }
+	    }    
+        }
+
+	sleep 10
+
+        stage ("Prod Tests"){
+            container('python-alpine'){
+	            //sh "python3 /e2e-test-prod.py"
+          }
+        }
+        
+    }
+    catch(err){
+        currentBuild.result = 'Failure'
+    }
+}
+}
