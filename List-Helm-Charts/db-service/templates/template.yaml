@@ -13,8 +13,7 @@ spec:
       labels:
         app: db-service
         version: {{ .Values.deploy.version }}
-      annotations:
-        sidecar.istio.io/inject: "false"
+
     spec:
       initContainers:
       - image: 100.71.71.71:5000/init-container:{{ .Values.image.tag }}

@@ -21,8 +21,7 @@ kind: Deployment
 metadata:
   namespace: {{ .Values.namespace }}
   name: ui-deployment-{{ .Values.deploy.version }}
-  annotations:
-        sidecar.istio.io/inject: "false"
+
 spec:
   selector:
     matchLabels:
