@@ -1,20 +1,4 @@
 ---
-kind: Service
-apiVersion: v1
-metadata:
-  namespace: production
-  name: get-service
-  labels:
-    app: get
-spec:
-  selector:
-    app: get
-  ports:
-  - protocol: TCP
-    port: 5003
-    targetPort: 5003
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
