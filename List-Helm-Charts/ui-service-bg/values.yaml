@@ -11,7 +11,8 @@ image:
 app:
   name: get
   version: ""
-
+conf:
+  ver: ""
 service:
   type: ClusterIP
   port: 5000
