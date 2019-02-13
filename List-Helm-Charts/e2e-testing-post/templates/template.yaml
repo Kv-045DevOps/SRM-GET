@@ -32,7 +32,7 @@ spec:
     spec:
       containers:
       - name: post
-        image: 100.71.71.71:5000/post-service:{{ .Values.image.tag }}
+        image: 100.71.71.71:5000/post-service:{{ .Values.image.tag.post }}
         ports:
         - containerPort: 5001
         env:
