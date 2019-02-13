@@ -40,9 +40,4 @@ spec:
             configMapKeyRef:
               name: services-address
               key: VIEW_SERVICE_URL
-	- name: POST_SERVICE_URL
-          valueFrom:
-            configMapKeyRef:
-              name: services-address
-              key: POST_SERVICE_URL
 ---
