@@ -13,7 +13,7 @@ image:
     post: ""
 
 app:
-  name: ui
+  name: post
 
 service:
   type: ClusterIP
