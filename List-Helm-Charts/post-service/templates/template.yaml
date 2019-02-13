@@ -3,7 +3,7 @@ kind: Service
 apiVersion: v1
 metadata:
   namespace: production
-  name: post-service-{{ .Values.deploy.version }}
+  name: post-service-{{ .Values.conf.ver }}
   labels:
     app: post
 spec:
@@ -11,7 +11,7 @@ spec:
     app: post
   ports:
   - protocol: TCP
-    port: 5001
+    port: 80
     targetPort: 5001
 
 ---
@@ -29,7 +29,6 @@ spec:
     metadata:
       labels:
         app: post
-        version: {{ .Values.deploy.version }}
     spec:
       containers:
       - name: post
@@ -40,5 +39,6 @@ spec:
         - name: DB_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.conf.ver }}
+              name: services-address-{{ .Values.con.ver }}
               key: DB_URL
+---
