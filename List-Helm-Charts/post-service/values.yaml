@@ -8,13 +8,17 @@ image:
   repository: 100.71.71.71:5000
   tag: ""
 
+conf:
+  ver: ""
+
 app:
-  name: ui
+  name: post
+  version: ""
 
 service:
   type: ClusterIP
   port: 5000
-  servicename: ui-service
+  servicename: post-service
 
 namespace: production
 
