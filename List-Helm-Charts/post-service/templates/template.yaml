@@ -39,6 +39,6 @@ spec:
         - name: DB_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.con.ver }}
+              name: services-address-{{ .Values.conf.ver }}
               key: DB_URL
 ---
