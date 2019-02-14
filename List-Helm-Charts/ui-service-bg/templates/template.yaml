@@ -13,11 +13,11 @@ spec:
   template:
     metadata:
       labels:
-        app: {{ .Values.app.name }}
+        app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
         version: {{ .Values.deploy.version }}
     spec:
       containers:
-      - name: {{ .Values.app.name }}
+      - name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
         image: "{{ .Values.image.repository }}/{{ .Values.service.servicename }}:{{ .Values.image.tag }}"
         ports:
         - containerPort: 5000
@@ -37,13 +37,13 @@ kind: Service
 apiVersion: v1
 metadata:
   namespace: {{ .Values.namespace }}
-  name: "{{ .Values.service.servicename }}-{{ .Values.deploy.version }}
+  name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
   labels:
-    app: {{ .Values.app.name }}
+    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
     version: {{ .Values.deploy.version }}
 spec:
   selector:
-    app: {{ .Values.app.name }}
+    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
   ports:
   - protocol: TCP
     port: 5000

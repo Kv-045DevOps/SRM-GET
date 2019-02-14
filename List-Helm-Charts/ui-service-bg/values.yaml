@@ -9,14 +9,14 @@ image:
   tag: ""
 
 app:
-  name: get
+  name: ui
   version: ""
 conf:
   ver: ""
 service:
   type: ClusterIP
   port: 5000
-  servicename: get-service
+  servicename: ui-service
 
 namespace: production
 
