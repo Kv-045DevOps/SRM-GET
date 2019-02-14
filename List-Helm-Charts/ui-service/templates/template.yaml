@@ -5,11 +5,11 @@ metadata:
   namespace: {{ .Values.namespace }}
   name: {{ .Values.service.servicename }}
   labels:
-    app: {{ .Values.app.name }}
+    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
     version: {{ .Values.deploy.version }}
 spec:
   selector:
-    app: {{ .Values.app.name }}
+    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
   ports:
   - protocol: TCP
     port: 5000
@@ -25,17 +25,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.app.name }}
+      app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
       version: {{ .Values.deploy.version }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: {{ .Values.app.name }}
+        app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
         version: {{ .Values.deploy.version }}
     spec:
       containers:
-      - name: {{ .Values.app.name }}
+      - name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
         image: "{{ .Values.image.repository }}/ui-service:{{ .Values.image.tag }}"
         ports:
         - containerPort: 5000
