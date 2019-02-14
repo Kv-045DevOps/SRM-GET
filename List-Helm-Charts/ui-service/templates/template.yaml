@@ -8,13 +8,13 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
+      app: ui
       version: {{ .Values.deploy.version }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
+        app: ui
         version: {{ .Values.deploy.version }}
     spec:
       containers:
