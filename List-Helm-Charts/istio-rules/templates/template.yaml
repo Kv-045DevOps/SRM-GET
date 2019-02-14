@@ -23,6 +23,9 @@ spec:
   gateways:
   - srm-gateway
   http:
+  - match:
+    - uri:
+        prefix: "/"
     - route:
       - destination:
           host: {{ .Values.app.name }}
