@@ -1,21 +1,4 @@
 ---
-kind: Service
-apiVersion: v1
-metadata:
-  namespace: {{ .Values.namespace }}
-  name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-  labels:
-    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-    version: {{ .Values.deploy.version }}
-spec:
-  selector:
-    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-  ports:
-  - protocol: TCP
-    port: 5000
-    targetPort: 5000
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,10 +26,10 @@ spec:
         - name: POST_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.conf.ver }}
+              name: services-address
               key: POST_SERVICE_URL
         - name: VIEW_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.conf.ver }}
+              name: services-address
               key: VIEW_SERVICE_URL
