@@ -1,8 +1,8 @@
 #!/bin/bash
 
-. DeployCluster.sh
+#. DeployCluster.sh
 
-sleep 3m
+#sleep 3m
 
 kubectl apply -f DeployRegistry.yaml
 kubectl apply -f myjob.yaml

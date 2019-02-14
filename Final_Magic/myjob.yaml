@@ -11,6 +11,12 @@ metadata:
   name: testing
 
 ---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production-bg
+---
 #apiVersion: v1
 #kind: Secret
 #metadata:
@@ -23,6 +29,13 @@ metadata:
 #type: Opaque
 
 #---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins
+  namespace: production-bg
+---
 
 apiVersion: v1
 kind: ServiceAccount
@@ -212,6 +225,64 @@ subjects:
 ---
 
 
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jenkins-bg
+  namespace: production-bg
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["extensions"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/portforward"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-bg
+  namespace: production-bg
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins-kube
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: production  
+---
 
 apiVersion: v1
 kind: ConfigMap
@@ -247,7 +318,33 @@ data:
   DB_URL: db-service.testing.svc
   URL_DB: db-service.testing.svc
 
+
 ---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: production-bg
+  name: services-address-v1
+data:
+  POST_SERVICE_URL: post-service-v1.production-bg.svc
+  VIEW_SERVICE_URL: get-service-v1.production-bg.svc
+  DB_URL: db-service-v1.production-bg.svc
+  URL_DB: db-service-v1.production-bg.svc
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: production-bg
+  name: services-address-v2
+data:
+  POST_SERVICE_URL: post-service-v2.production-bg.svc
+  VIEW_SERVICE_URL: get-service-v2.production-bg.svc
+  DB_URL: db-service-v2.production-bg.svc
+  URL_DB: db-service-v2.production-bg.svc
+---
+
 
 apiVersion: v1
 data:
