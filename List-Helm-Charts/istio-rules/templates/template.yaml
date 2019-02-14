@@ -26,7 +26,7 @@ spec:
   - match:
     - uri:
         prefix: "/"
-    - route:
+    route:
       - destination:
           host: {{ .Values.app.name }}
           subset: v1
