@@ -8,7 +8,9 @@ properties([
         stringParam(
             defaultValue: '***', 
             description: '', 
-            name: 'service')
+            name: 'service'),
+        choice(choices: ["db", "ui", "get", "post"], description: 'What Service?', name: "servicedel"),
+        choice(choices: ["v1", "v2"], description: 'What version?', name: "versiondel")
     ])
 ])
 
@@ -34,48 +36,51 @@ node(label)
             }
         }
         stage("Deploy to Kubernetes"){
-            if(params.service == "db"){
+            if(params.servicedel == "db"){
 		    container ("helm"){
-		        check = sh(script: """helm list -c db-service | awk '{ print \$1 }' | grep v1""", returnStdout:true)
-		        echo "${check}"
-		        if (check){
-		            sh "helm upgrade --install --namespace production --force db-service-v2 ${pathTocodeget}/List-Helm-Charts/db-service-bg --set=deploy.version=v2,image.tag=${params.imageTagDB_}"
-                    sh "helm upgrade --install --namespace production --force istio-rules-db ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=0,--set weight.v2=100, --set app=db-service"}            
-                else{
-                    sh "helm upgrade --install --namespace production --force db-service-v1 ${pathTocodeget}/List-Helm-Charts/db-service --set=deploy.version=v1,image.tag=${params.imageTagDB_}"
+		        if (params.versiondel == "v2"){
+		            sh "helm delete db-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-db ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100 --set weight.v2=0 --set app=db-service"
+		        }
+                if (params.versiondel == "v1"){
+                    sh "helm delete db-service-v1 --purge"
                 }			
 	    }
 	    }
-            if(params.service == "get"){
+            if(params.servicedel == "get"){
 		container ("helm"){
-		        check = sh(script: """helm list -c get-service | awk '{ print \$1 }' | grep v1""", returnStdout:true)
-		        echo "${check}"
-		        if (check){
-		            sh "helm upgrade --install --namespace production --force get-service-v2 ${pathTocodeget}/List-Helm-Charts/get-service-bg --set=deploy.version=v2,image.tag=${params.imageTagGET_}"
-                    sh "helm upgrade --install --namespace production --force istio-rules-get ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=0 --set weight.v2=100 --set app.name=get"}            
-                else{
-                    sh "helm upgrade --install --namespace production --force get-service-v1 ${pathTocodeget}/List-Helm-Charts/get-service --set=deploy.version=v1,image.tag=${params.imageTagGET_}"
+		        if (params.versiondel == "v2"){
+		            sh "helm delete get-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-get ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100 --set weight.v2=0 --set app=get"
+		        }
+                if (params.versiondel == "v1"){
+                    sh "helm delete get-service-v1 --purge"
                 }			
 	    }
 	    }
-	    if(params.service == "ui"){
+	    if(params.servicedel == "ui"){
 		container ("helm"){
-		        check = sh(script: """helm list -c ui-service | awk '{ print \$1 }' | grep v1""", returnStdout:true)
-		        echo "${check}"
-		        if (check){
-		            sh "helm upgrade --install --namespace production --force ui-service-v2 ${pathTocodeget}/List-Helm-Charts/ui-service-bg --set=deploy.version=v2,image.tag=${params.imageTagUI_}"
-                    sh "helm upgrade --install --namespace production --force istio-rules-ui ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=0,--set weight.v2=100, --set app.name=ui"}            
-                else{
-                    sh "helm upgrade --install --namespace production --force ui-service-v1 ${pathTocodeget}/List-Helm-Charts/ui-service --set=deploy.version=v1,image.tag=${params.imageTagUI_}"
+		        if (params.versiondel == "v2"){
+		            sh "helm delete ui-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-ui ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100 --set weight.v2=0 --set app=ui"
+		        }
+                if (params.versiondel == "v1"){
+                    sh "helm delete ui-service-v1 --purge"
+                }			
+	    }
+	    }
+	    if(params.servicedel == "post"){
+		    container ("helm"){
+		        if (params.versiondel == "v2"){
+		            sh "helm delete post-service-v2 --purge"
+                    sh "helm upgrade --install --namespace production --force istio-rules-post ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100 --set weight.v2=0 --set app=post"
+		        }
+                if (params.versiondel == "v1"){
+                    sh "helm delete post-service-v1 --purge"
                 }			
 	    }
 	    }
             
-            if(params.service == "post"){
-		container ("helm"){
-		    
-	    }
-	    }    
         }
 
 	sleep 10

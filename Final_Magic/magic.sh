@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#. DeployCluster.sh
+. DeployCluster.sh
 
-#sleep 3m
+sleep 3m
 
 kubectl apply -f DeployRegistry.yaml
 kubectl apply -f myjob.yaml
@@ -14,3 +14,4 @@ kubectl create clusterrolebinding tiller \
   --clusterrole cluster-admin \
   --serviceaccount=kube-system:tiller
 helm init --service-account tiller
+
