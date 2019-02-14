@@ -7,17 +7,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: get
+      app: get-service
   replicas: 1
   template:
     metadata:
       labels:
-        app: get
+        app: get-service
         version: {{ .Values.deploy.version }}
 
     spec:
       containers:
-      - name: get
+      - name: get-service
         image: "{{ .Values.image.repository }}/get-service:{{ .Values.image.tag }}"
         ports:
         - containerPort: 5003

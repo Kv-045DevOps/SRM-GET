@@ -1,17 +1,4 @@
 ---
-kind: Service
-apiVersion: v1
-metadata:
-  namespace: production
-  name: db-service-{{ .Values.deploy.version }}
-spec:
-  selector:
-    app: db-service
-  ports:
-  - protocol: TCP
-    port: 5002
-    targetPort: 5002
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:

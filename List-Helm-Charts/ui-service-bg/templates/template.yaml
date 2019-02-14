@@ -7,17 +7,17 @@ metadata:
 spec:
   selector:
     matchLabels:
-      app: {{ .Values.app.name }}
+      app: ui
       version: {{ .Values.deploy.version }}
   replicas: 1
   template:
     metadata:
       labels:
-        app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
+        app: {{ .Values.app.name }}
         version: {{ .Values.deploy.version }}
     spec:
       containers:
-      - name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
+      - name: {{ .Values.app.name }}
         image: "{{ .Values.image.repository }}/{{ .Values.service.servicename }}:{{ .Values.image.tag }}"
         ports:
         - containerPort: 5000
@@ -25,26 +25,11 @@ spec:
         - name: POST_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.deploy.version }}
+              name: services-address
               key: POST_SERVICE_URL
         - name: VIEW_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.deploy.version }}
+              name: services-address
               key: VIEW_SERVICE_URL
 ---
-kind: Service
-apiVersion: v1
-metadata:
-  namespace: {{ .Values.namespace }}
-  name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-  labels:
-    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-    version: {{ .Values.deploy.version }}
-spec:
-  selector:
-    app: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
-  ports:
-  - protocol: TCP
-    port: 5000
-    targetPort: 5000
