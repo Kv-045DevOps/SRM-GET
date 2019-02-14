@@ -25,12 +25,12 @@ spec:
         - name: POST_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.conf.ver }}
+              name: services-address-{{ .Values.deploy.version }}
               key: POST_SERVICE_URL
         - name: VIEW_SERVICE_URL
           valueFrom:
             configMapKeyRef:
-              name: services-address-{{ .Values.conf.ver }}
+              name: services-address-{{ .Values.deploy.version }}
               key: VIEW_SERVICE_URL
 ---
 kind: Service
