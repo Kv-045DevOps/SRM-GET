@@ -1,0 +1,35 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: ui-deployment-{{ .Values.deploy.version }}
+
+spec:
+  selector:
+    matchLabels:
+      app: ui
+      version: {{ .Values.deploy.version }}
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ui
+        version: {{ .Values.deploy.version }}
+    spec:
+      containers:
+      - name: "{{ .Values.app.name }}-{{ .Values.deploy.version }}"
+        image: "{{ .Values.image.repository }}/ui-service:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 5000
+        env:
+        - name: POST_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: POST_SERVICE_URL
+        - name: VIEW_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: VIEW_SERVICE_URL

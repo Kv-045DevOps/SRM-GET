@@ -1,0 +1,26 @@
+def buildResult
+def paramss = ["GitHub/SRM-GET/test", "GitHub/SRM-UI/test", "GitHub/SRM-DB/test"]
+properties([
+    parameters([
+        stringParam(
+            defaultValue: 'v3.0', 
+            description: '', 
+            name: 'imageTag'),
+        stringParam(
+            defaultValue: '***', 
+            description: '', 
+            name: 'namespace')
+    ])
+])
+
+        stage('Build and push Docker images') {
+            def jobs = [:]
+            for(i = 0; i < paramss.size(); i += 1) {
+                def param = paramss[i]
+                jobs["Jobs_build_${i}"] = {
+                    build job: param, parameters: [[$class: 'StringParameterValue', name: "imageTag", 
+        	                        value: "${params.imageTag}"]], wait: true
+                }
+            }
+            parallel jobs
+        }

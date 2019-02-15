@@ -1,0 +1,28 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: production
+  name: get-deployment-{{ .Values.deploy.version }}
+spec:
+  selector:
+    matchLabels:
+      app: get-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: get-service
+        version: {{ .Values.deploy.version }}
+    spec:
+      containers:
+      - name: get-service
+        image: "{{ .Values.image.repository }}/get-service:{{ .Values.image.tag }}"
+        ports:
+        - containerPort: 5003
+        env:
+        - name: URL_DB
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: URL_DB

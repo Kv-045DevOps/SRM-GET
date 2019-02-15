@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: production
+  name: post-deployment-{{ .Values.deploy.version }}
+spec:
+  selector:
+    matchLabels:
+      app: post-service
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: post-service
+        version: {{ .Values.deploy.version }}
+    spec:
+      containers:
+      - name: post-service
+        image: 100.71.71.71:5000/post-service:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 5001
+        env:
+        - name: DB_URL
+          valueFrom:
+            configMapKeyRef:
+              name: services-address
+              key: DB_URL
+---

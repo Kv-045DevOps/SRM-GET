@@ -1,0 +1,571 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+
+---
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: testing
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+ name:  db-secret
+ namespace: production
+data:
+  username:  ZGJhZG1pbg==
+  password:  UGFzc3dvcmQ=
+  dbname: c3Jtc3lzdGVt
+type: Opaque
+
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins
+  namespace: production
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jenkins
+  namespace: production
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["extensions"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins
+  namespace: production
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins
+subjects:
+- kind: ServiceAccount
+  name: jenkins   
+---
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins
+  namespace: testing
+
+---
+
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: jenkins-test
+  namespace: testing
+rules:
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["get","list","watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["extensions"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["persistentvolumeclaims"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["configmaps"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-test
+  namespace: testing
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins-test
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: production  
+---
+
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: production
+  name: services-address
+data:
+  POST_SERVICE_URL: post-service.production.svc
+  VIEW_SERVICE_URL: get-service.production.svc
+  DB_URL: db-service.production.svc
+  URL_DB: db-service.production.svc
+
+---
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: testing
+  name: services-address
+data:
+  POST_SERVICE_URL: post-service.production.svc
+  VIEW_SERVICE_URL: get-service.production.svc
+  DB_URL: db-service.production.svc
+  URL_DB: db-service.production.svc
+
+---
+
+apiVersion: v1
+data:
+  GitHub.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <jenkins.branch.OrganizationFolder plugin="branch-api@2.1.2">
+      <actions/>
+      <description></description>
+      <displayName>GitHub</displayName>
+      <properties>
+        <com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty plugin="cloudbees-folder@6.7">
+          <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+            <entry>
+              <com.cloudbees.plugins.credentials.domains.Domain plugin="credentials@2.1.18">
+                <specifications/>
+              </com.cloudbees.plugins.credentials.domains.Domain>
+              <java.util.concurrent.CopyOnWriteArrayList>
+                <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl plugin="credentials@2.1.18">
+                  <id>git</id>
+                  <description></description>
+                  <username>admgolovin</username>
+                  <password>Slider256$</password>
+                </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+                <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl plugin="credentials@2.1.18">
+                  <id>github-1</id>
+                  <description></description>
+                  <username>admgolovin</username>
+                  <password>$GITPWD</password>
+                </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+              </java.util.concurrent.CopyOnWriteArrayList>
+            </entry>
+          </domainCredentialsMap>
+        </com.cloudbees.hudson.plugins.folder.properties.FolderCredentialsProvider_-FolderCredentialsProperty>
+        <org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig plugin="pipeline-model-definition@1.3.4.1">
+          <dockerLabel></dockerLabel>
+          <registry plugin="docker-commons@1.13"/>
+        </org.jenkinsci.plugins.pipeline.modeldefinition.config.FolderConfig>
+      </properties>
+      <folderViews class="jenkins.branch.OrganizationFolderViewHolder">
+        <owner reference="../.."/>
+      </folderViews>
+      <healthMetrics>
+        <com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric plugin="cloudbees-folder@6.7">
+          <nonRecursive>false</nonRecursive>
+        </com.cloudbees.hudson.plugins.folder.health.WorstChildHealthMetric>
+      </healthMetrics>
+      <icon class="jenkins.branch.MetadataActionFolderIcon">
+        <owner class="jenkins.branch.OrganizationFolder" reference="../.."/>
+      </icon>
+      <orphanedItemStrategy class="com.cloudbees.hudson.plugins.folder.computed.DefaultOrphanedItemStrategy" plugin="cloudbees-folder@6.7">
+        <pruneDeadBranches>true</pruneDeadBranches>
+        <daysToKeep>1</daysToKeep>
+        <numToKeep>1</numToKeep>
+      </orphanedItemStrategy>
+      <triggers>
+        <com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger plugin="cloudbees-folder@6.7">
+          <spec>H/5 * * * *</spec>
+          <interval>900000</interval>
+        </com.cloudbees.hudson.plugins.folder.computed.PeriodicFolderTrigger>
+      </triggers>
+      <disabled>false</disabled>
+      <navigators>
+        <org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator plugin="github-branch-source@2.4.2">
+          <repoOwner>Kv-045DevOps</repoOwner>
+          <credentialsId>github-1</credentialsId>
+          <traits>
+            <jenkins.scm.impl.trait.RegexSCMSourceFilterTrait plugin="scm-api@2.3.0">
+              <regex>Kubik-DB|SRM-GET|SRM-UI|SRM-DB</regex>
+            </jenkins.scm.impl.trait.RegexSCMSourceFilterTrait>
+            <org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+              <strategyId>1</strategyId>
+            </org.jenkinsci.plugins.github__branch__source.BranchDiscoveryTrait>
+            <org.jenkinsci.plugins.github__branch__source.OriginPullRequestDiscoveryTrait>
+              <strategyId>1</strategyId>
+            </org.jenkinsci.plugins.github__branch__source.OriginPullRequestDiscoveryTrait>
+            <org.jenkinsci.plugins.github__branch__source.ForkPullRequestDiscoveryTrait>
+              <strategyId>1</strategyId>
+              <trust class="org.jenkinsci.plugins.github_branch_source.ForkPullRequestDiscoveryTrait$TrustPermission"/>
+            </org.jenkinsci.plugins.github__branch__source.ForkPullRequestDiscoveryTrait>
+          </traits>
+        </org.jenkinsci.plugins.github__branch__source.GitHubSCMNavigator>
+      </navigators>
+      <projectFactories>
+        <org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory plugin="workflow-multibranch@2.20">
+          <scriptPath>Jenkinsfile</scriptPath>
+        </org.jenkinsci.plugins.workflow.multibranch.WorkflowMultiBranchProjectFactory>
+      </projectFactories>
+      <buildStrategies>
+        <jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl plugin="basic-branch-build-strategies@1.1.1">
+          <filters>
+            <jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl_-RegexNameFilter>
+              <regex>.*</regex>
+              <caseSensitive>true</caseSensitive>
+            </jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl_-RegexNameFilter>
+          </filters>
+        </jenkins.branch.buildstrategies.basic.NamedBranchBuildStrategyImpl>
+      </buildStrategies>
+    </jenkins.branch.OrganizationFolder>
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-01-18T03:22:02Z"
+  name: stark2
+  namespace: production
+  resourceVersion: "96672"
+  selfLink: /api/v1/namespaces/default/configmaps/stark
+  uid: b70d8525-17fd-11e9-b845-02d08d5f4672
+
+---
+
+apiVersion: v1
+data:
+  config.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <hudson>
+      <disabledAdministrativeMonitors/>
+      <version>2.150.2</version>
+      <installStateName>RUNNING</installStateName>
+      <numExecutors>2</numExecutors>
+      <mode>NORMAL</mode>
+      <useSecurity>true</useSecurity>
+      <authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
+        <denyAnonymousReadAccess>false</denyAnonymousReadAccess>
+      </authorizationStrategy>
+      <securityRealm class="hudson.security.HudsonPrivateSecurityRealm">
+        <disableSignup>true</disableSignup>
+        <enableCaptcha>false</enableCaptcha>
+      </securityRealm>
+      <disableRememberMe>false</disableRememberMe>
+      <projectNamingStrategy class="jenkins.model.ProjectNamingStrategy$DefaultProjectNamingStrategy"/>
+      <workspaceDir>${JENKINS_HOME}/workspace/${ITEM_FULL_NAME}</workspaceDir>
+      <buildsDir>${ITEM_ROOTDIR}/builds</buildsDir>
+      <jdks/>
+      <viewsTabBar class="hudson.views.DefaultViewsTabBar"/>
+      <myViewsTabBar class="hudson.views.DefaultMyViewsTabBar"/>
+      <clouds>
+        <org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud plugin="kubernetes@1.14.3">
+          <name>kubernetes</name>
+          <defaultsProviderTemplate></defaultsProviderTemplate>
+          <templates/>
+          <serverUrl>https://kubernetes.default.svc</serverUrl>
+          <skipTlsVerify>false</skipTlsVerify>
+          <addMasterProxyEnvVars>false</addMasterProxyEnvVars>
+          <capOnlyOnAlivePods>false</capOnlyOnAlivePods>
+          <namespace>production</namespace>
+          <jenkinsUrl>http://127.0.0.1:8080/</jenkinsUrl>
+          <credentialsId>kube-login</credentialsId>
+          <containerCap>10</containerCap>
+          <retentionTimeout>5</retentionTimeout>
+          <connectTimeout>0</connectTimeout>
+          <readTimeout>0</readTimeout>
+          <usageRestricted>false</usageRestricted>
+          <maxRequestsPerHost>32</maxRequestsPerHost>
+          <waitForPodSec>600</waitForPodSec>
+          <podRetention class="org.csanchez.jenkins.plugins.kubernetes.pod.retention.Never"/>
+        </org.csanchez.jenkins.plugins.kubernetes.KubernetesCloud>
+      </clouds>
+      <quietPeriod>5</quietPeriod>
+      <scmCheckoutRetryCount>0</scmCheckoutRetryCount>
+      <views>
+        <hudson.model.AllView>
+          <owner class="hudson" reference="../../.."/>
+          <name>all</name>
+          <filterExecutors>false</filterExecutors>
+          <filterQueue>false</filterQueue>
+          <properties class="hudson.model.View$PropertyList"/>
+        </hudson.model.AllView>
+      </views>
+      <primaryView>all</primaryView>
+      <slaveAgentPort>50000</slaveAgentPort>
+      <label></label>
+      <nodeProperties/>
+      <globalNodeProperties/>
+    </hudson>
+  credentials.xml: |-
+    <?xml version='1.1' encoding='UTF-8'?>
+    <com.cloudbees.plugins.credentials.SystemCredentialsProvider plugin="credentials@2.1.18">
+      <domainCredentialsMap class="hudson.util.CopyOnWriteMap$Hash">
+        <entry>
+          <com.cloudbees.plugins.credentials.domains.Domain>
+            <specifications/>
+          </com.cloudbees.plugins.credentials.domains.Domain>
+          <java.util.concurrent.CopyOnWriteArrayList>
+            <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+              <scope>GLOBAL</scope>
+              <id>kube-login</id>
+              <description></description>
+              <username>admin</username>
+              <password>$PASSWORD</password>
+            </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+            <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+              <scope>GLOBAL</scope>
+              <id>git_cred</id>
+              <description></description>
+              <username>Maxghost33</username>
+              <password>{AQAAABAAAAAg1cMYtdzX0b8pqPwU99XFsHEZtmsDLQy8n/RBMOnJnAj9ScoSD8i87dXfnx7TD0m+}</password>
+            </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+            <com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+              <scope>GLOBAL</scope>
+              <id>docker_registry</id>
+              <description></description>
+              <username>ghostgoose33</username>
+              <password>{AQAAABAAAAAg8qaRTgg3fvfezKNrIlbz5LAhL3/WI0W5Nl4MLFgrPxYFSb8qACvkxcMFGvbtFQYx}</password>
+            </com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+          </java.util.concurrent.CopyOnWriteArrayList>
+        </entry>
+      </domainCredentialsMap>
+    </com.cloudbees.plugins.credentials.SystemCredentialsProvider>
+kind: ConfigMap
+metadata:
+  creationTimestamp: "2019-01-17T19:47:40Z"
+  name: jenconf
+  namespace: production
+  resourceVersion: "5227"
+  selfLink: /api/v1/namespaces/production/configmaps/jenconf
+  uid: bfec9ca6-1a90-11e9-a5b8-020fccbfb056
+
+---
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: jenkins2
+  namespace: production
+  labels:
+    service: jenkins2
+spec:
+  tolerations:
+  - key: "node"
+    operator: "Equal"
+    value: "boubde"
+    effect: "NoSchedule"
+  containers:
+  - name: stark-jenkins2
+    image: admgolovin/myjenkins:v12
+    volumeMounts:
+      - name: jenkins-config
+        mountPath: /var/jenkins_home/2/jobs/GitHub/
+      - name: jenconf
+        mountPath: /var/jenkins_home/2
+    lifecycle:
+      postStart:
+        exec:
+          command: ["/bin/sh","-c", "cp /var/jenkins_home/2/config.xml /var/jenkins_home/; cp /var/jenkins_home/2/credentials.xml /var/jenkins_home/; cp /var/jenkins_home/2/hudson.util.Secret /var/jenkins_home/secrets/; cp /var/jenkins_home/2/master.key /var/jenkins_home/secrets/; sleep 5m; java -jar /tools/jenkins-cli.jar -s http://127.0.0.1:8080 -auth admin:admin  create-job GitHub < /var/jenkins_home/2/jobs/GitHub/GitHub.xml"]       
+  serviceAccount: jenkins
+  serviceAccountName: jenkins
+  volumes:
+    - name: jenkins-config       
+      configMap:
+          name: stark2
+    - name: jenconf
+      configMap:
+          name: jenconf
+  restartPolicy: OnFailure
+
+# ---
+# kind: Endpoints
+# apiVersion: v1
+# metadata:
+#   name: my-service2
+#   namespace: production
+# subsets:
+# - addresses: 
+#   - ip: 10.0.0.1
+#     targetRef:
+#     kind: Node
+#     name: node1
+#   ports:
+#     - name: myjenkins 
+#       port: 8080
+#       protocol: TCP
+  
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: my-service
+  namespace: production
+spec:
+  selector:
+    service: jenkins2
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+  type: LoadBalancer
+
+---
+
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins-agent
+  namespace: production
+spec:
+  selector:
+    service: jenkins2
+  ports:
+  - protocol: TCP
+    port: 50000
+    targetPort: 50000
+  type: LoadBalancer
+
+---
+
+apiVersion: v1
+kind: Secret
+metadata:
+  name: test-secret
+  namespace: production
+data:
+  password: YWRtaW4=
+
+---
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: dind-jen
+#   namespace: production
+# spec:
+#   containers:
+#   - name: jnlp
+#     image: '/myjenkins:jenslave'
+#     args: ['\$(JENKINS_SECRET)']
+#     env:
+#     - name: DOCKER_HOST
+#       value: tcp://localhost:2375
+#   - name: dind
+#     image: docker:stable-dind
+#     securityContext:
+#       privileged: true
+#     volumeMounts:
+#       - name: dind-storage
+#         mountPath: /var/lib/docker
+#   volumes:
+#   - name: dind-storage
+#     emptyDir: {}
+  
+---
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: jenslave
+#   namespace: production
+#   labels:
+#     service: jenkins
+# spec:
+#   containers:
+#   - name: jnlp
+#     image: /myjenkins:jenslave
+#     resources:
+#       limits:
+#         memory: "600Mi"
+#       requests:
+#         memory: "500Mi"
+
+# apiVersion: apps/v1
+# kind: Deployment
+# metadata:
+#   name: jenkins-storage
+#   namespace: production
+# spec:
+#   selector:
+#     matchLabels:
+#       service: jenkins
+#   template:
+#     metadata:
+#       labels:
+#         service: jenkins    
+#     spec:
+#       containers:
+#       - name: stark-jenkins
+#         image: ghostgoose33/jenkins-alp:v2
+#         volumeMounts:
+#         - name: jenkins-config
+#           mountPath: /var/lib/jenkins/job/GitHub
+#       volumes:
+#       - name: jenkins-config       
+#         configMap:
+#           name: stark2
+
+---
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: jenkins2
+#   namespace: production
+#   labels:
+#     service: jenkins2
+# spec:
+#   containers:
+#   - name: stark-jenkins2
+#     image: ghostgoose33/jenkins-alp:v2
+
+#   restartPolicy: OnFailure
+
+---

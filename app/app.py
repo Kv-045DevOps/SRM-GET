@@ -8,10 +8,10 @@ app = Flask(__name__)
 
 
 
-URL_DEP = str(os.getenv("URL_DB")) + 'get-dep'
-URL_EMPL = str(os.getenv("URL_DB")) + 'get-empl'
-URL_TEAM = str(os.getenv("URL_DB")) + 'get-team'
-URL_ALL = str(os.getenv("URL_DB")) + 'get-info'
+URL_DEP = 'http://' + str(os.getenv("URL_DB")) + ':5002/get-dep'
+URL_EMPL = 'http://' + str(os.getenv("URL_DB")) + ':5002/get-empl'
+URL_TEAM = 'http://' + str(os.getenv("URL_DB")) + ':5002/get-team'
+URL_ALL = 'http://' + str(os.getenv("URL_DB")) + ':5002/get-info'
 
 def print_url():
     print(URL_DEP)
@@ -22,8 +22,11 @@ def print_url():
 def get_dep():
     r = requests.get(URL_DEP)
     if r.status_code == 200:
+        print(type(r.content))
+        print(r.content)
         return r.content
     else:
+        print(r.status_code)
         return (r.status_code, r.headers)
 
 def get_empl():
@@ -121,5 +124,5 @@ def get_one():
 
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0',port='5003')
+    app.run(host="0.0.0.0", port="5003")
 
