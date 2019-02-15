@@ -7,11 +7,16 @@ replicaCount: 1
 image:
   repository: 100.71.71.71:5000
   tag: ""
+
+
 app:
   name: ""
 
+vers: ""
+
 deploy:
   version: ""
+
 
 weight:
   v1: ""
