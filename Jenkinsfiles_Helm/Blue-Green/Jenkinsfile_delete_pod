@@ -40,7 +40,7 @@ node(label)
 		    container ("helm"){
 		        if (params.versiondel == "v2"){
 		            sh "helm delete db-service-v2 --purge"
-                    sh "helm upgrade --install --namespace production --force istio-rules-db ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=db-service"
+                    sh "helm upgrade --install --namespace production --force istio-rules-db ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=db-service, --set port=5002"
 		        }
                 if (params.versiondel == "v1"){
                     sh "helm delete db-service-v1 --purge"
@@ -51,7 +51,7 @@ node(label)
 		container ("helm"){
 		        if (params.versiondel == "v2"){
 		            sh "helm delete get-service-v2 --purge"
-                    sh "helm upgrade --install --namespace production --force istio-rules-get ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=get"
+                    sh "helm upgrade --install --namespace production --force istio-rules-get ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=get, --set port=5003"
 		        }
                 if (params.versiondel == "v1"){
                     sh "helm delete get-service-v1 --purge"
@@ -62,7 +62,7 @@ node(label)
 		container ("helm"){
 		        if (params.versiondel == "v2"){
 		            sh "helm delete ui-service-v2 --purge"
-                    sh "helm upgrade --install --namespace production --force istio-rules-ui ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=ui"
+                    sh "helm upgrade --install --namespace production --force istio-rules-ui ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=ui, --set port=5000"
 		        }
                 if (params.versiondel == "v1"){
                     sh "helm delete ui-service-v1 --purge"
@@ -73,7 +73,7 @@ node(label)
 		    container ("helm"){
 		        if (params.versiondel == "v2"){
 		            sh "helm delete post-service-v2 --purge"
-                    sh "helm upgrade --install --namespace production --force istio-rules-post ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=post"
+                    sh "helm upgrade --install --namespace production --force istio-rules-post ${pathTocodeget}/List-Helm-Charts/istio-rules --set weight.v1=100,--set weight.v2=0, --set app=post, --set port=5003"
 		        }
                 if (params.versiondel == "v1"){
                     sh "helm delete post-service-v1 --purge"

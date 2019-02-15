@@ -775,10 +775,10 @@ metadata:
   namespace: production
   name: get-service
   labels:
-    app: get
+    app: get-service
 spec:
   selector:
-    app: get
+    app: get-service
   ports:
   - protocol: TCP
     port: 5003
@@ -790,10 +790,10 @@ metadata:
   namespace: production
   name: post-service
   labels:
-    app: post
+    app: post-service
 spec:
   selector:
-    app: post
+    app: post-service
   ports:
   - protocol: TCP
     port: 5001
